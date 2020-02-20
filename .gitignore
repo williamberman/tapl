@@ -1,3 +1,6 @@
+.idea
+out
+tapl.iml
 .stack-work/
 tapl.cabal
 *~
