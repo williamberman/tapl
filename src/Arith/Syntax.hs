@@ -15,17 +15,17 @@ data Term =
 instance ParseTerm Term where
   makeTrue _ = TTrue
   makeFalse _ = TFalse
-  makeIf _ = If
+  makeIf pred' cons alt _ = If pred' cons alt
   makeZero _ = Zero
-  makeSucc _ = Succ
-  makePred _ = Pred
-  makeIsZero _ = IsZero
+  makeSucc t _ = Succ t
+  makePred t _ = Pred t
+  makeIsZero t _ = IsZero t
 
-  intToTerm d n =
+  intToTerm n d =
     if n <= 0 then
       Zero
     else
-      Succ $ intToTerm d $ n - 1
+      Succ $ intToTerm (n - 1) d
 
 isNumeric :: Term -> Bool
 
@@ -41,19 +41,19 @@ isVal TTrue = True
 isVal TFalse = False
 isVal term = isNumeric term
 
-data AugTerm = AugTerm ParseData Term
+data AugTerm = AugTerm Term ParseData
 
 instance ParseTerm AugTerm where
-  makeTrue d = AugTerm d TTrue
-  makeFalse d = AugTerm d TFalse
-  makeIf d (AugTerm _ predicate) (AugTerm _ consequent) (AugTerm _ alternative) = AugTerm d (If predicate consequent alternative)
-  makeZero d = AugTerm d Zero
-  makeSucc d (AugTerm _ t) = AugTerm d (Succ t)
-  makePred d (AugTerm _ t) = AugTerm d (Pred t)
-  makeIsZero d (AugTerm _ t) = AugTerm d (IsZero t)
+  makeTrue = AugTerm TTrue
+  makeFalse = AugTerm TFalse
+  makeIf (AugTerm predicate _) (AugTerm consequent _) (AugTerm alternative _) = AugTerm (If predicate consequent alternative)
+  makeZero = AugTerm Zero
+  makeSucc (AugTerm t _) = AugTerm (Succ t)
+  makePred (AugTerm t _) = AugTerm (Pred t)
+  makeIsZero (AugTerm t _) = AugTerm (IsZero t)
 
-  intToTerm d n =
+  intToTerm n d =
     if n <= 0 then
-      AugTerm d Zero
+      AugTerm Zero d
     else
-      AugTerm d $ Succ $ intToTerm d $ n - 1
+      AugTerm (Succ $ intToTerm (n - 1) d) d

@@ -1,30 +1,28 @@
 module Arith.Parser (parseLine, ParseTerm(..), ParseData) where
 
+import qualified Text.Parsec.Prim
 import Text.ParserCombinators.Parsec
+import qualified Control.Monad
 
 data ParseData = ParseData {
-  row :: Int
-  , col :: Int
+  row :: Line
+  , col :: Column
   , text :: String
 }
-
-dummyParseData = ParseData { row = 0, col = 0, text = "" }
 
 class ParseTerm a where
   makeTrue :: ParseData -> a
   makeFalse :: ParseData -> a
-  makeIf :: ParseData -> a -> a -> a -> a
+  makeIf :: a -> a -> a -> ParseData ->  a
   makeZero :: ParseData -> a
-  makeSucc :: ParseData -> a -> a
-  makePred :: ParseData -> a -> a
-  makeIsZero :: ParseData -> a -> a
-  intToTerm :: ParseData -> Int -> a
+  makeSucc :: a -> ParseData -> a
+  makePred :: a -> ParseData -> a
+  makeIsZero :: a -> ParseData -> a
+  intToTerm :: Int -> ParseData -> a
 
 parseLine :: ParseTerm a => String -> Either ParseError a
 parseLine = parse line "(unknown)"
 
--- TODO should be able to use either Term or AugmentedTerm
--- which means that the return type is parameterized
 line :: ParseTerm a => GenParser Char st a
 line = do
   term' <- term
@@ -46,25 +44,25 @@ term = do
   return term'
 
 true :: ParseTerm a => GenParser Char st a
-true = string "true" >> return (makeTrue dummyParseData)
+true = addParseData $ string "true" >> return makeTrue
 
 false :: ParseTerm a => GenParser Char st a
-false = string "false" >> return (makeFalse dummyParseData)
+false = addParseData $ string "false" >> return makeFalse
 
 num :: ParseTerm a => GenParser Char st a
-num = intToTerm dummyParseData . read <$> many1 digit
+num = addParseData $ intToTerm . read <$> many1 digit
 
 succ' :: ParseTerm a => GenParser Char st a
-succ' = makeSucc dummyParseData <$> fcall "succ"
+succ' = addParseData $ makeSucc <$> fcall "succ"
 
 pred' :: ParseTerm a => GenParser Char st a
-pred' = makePred dummyParseData <$> fcall "pred"
+pred' = addParseData $ makePred <$> fcall "pred"
 
 iszero :: ParseTerm a => GenParser Char st a
-iszero = makeIsZero dummyParseData <$> fcall "iszero"
+iszero = addParseData $ makeIsZero <$> fcall "iszero"
 
 if' :: ParseTerm a => GenParser Char st a
-if' = do
+if' = addParseData $ do
   string "if"
   spaces
   predicate <- term
@@ -75,7 +73,7 @@ if' = do
   spaces
   alternative <- term
   spaces
-  return $ makeIf dummyParseData predicate consequent alternative
+  return $ makeIf predicate consequent alternative
 
 fcall fName = do
   string fName
@@ -83,3 +81,12 @@ fcall fName = do
   term' <- term
   string ")"
   return term'
+
+addParseData :: ParseTerm a => GenParser Char st (ParseData -> a) -> GenParser Char st a
+addParseData parser = do
+  pos <- sourcePos
+  result <- parser
+  return $ result ParseData {row = sourceLine pos, col = sourceColumn pos, text = ""}
+
+sourcePos :: Monad m => Text.Parsec.Prim.ParsecT s u m SourcePos
+sourcePos = statePos `Control.Monad.liftM` getParserState
