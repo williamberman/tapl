@@ -6,8 +6,8 @@ import Arith.Syntax(Term(..), intToTerm)
 parseLine :: String -> Either ParseError Term
 parseLine = parse line "(unknown)"
 
--- TODO this should likely use the augmented
--- version of the Terms
+-- TODO should be able to use either Term or AugmentedTerm
+-- which means that the return type is parameterized
 line :: GenParser Char st Term
 line = do
   term' <- term
@@ -34,7 +34,6 @@ true = string "true" >> return TTrue
 false :: GenParser Char st Term
 false = string "false" >> return TFalse
 
--- TODO don't understand why need "read <$>"
 num :: GenParser Char st Term
 num = intToTerm . read <$> many1 digit
 
@@ -42,7 +41,7 @@ succ' :: GenParser Char st Term
 succ' = Succ <$> fcall "succ"
 
 pred' :: GenParser Char st Term
-pred' = Pred <$> fcall "pred" 
+pred' = Pred <$> fcall "pred"
 
 iszero :: GenParser Char st Term
 iszero = IsZero <$> fcall "iszero"
@@ -58,6 +57,7 @@ if' = do
   string "else"
   spaces
   alternative <- term
+  spaces
   return $ If predicate consequent alternative
 
 fcall :: String -> GenParser Char st Term
