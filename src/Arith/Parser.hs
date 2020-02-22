@@ -5,10 +5,13 @@ import Text.ParserCombinators.Parsec
 import qualified Control.Monad
 
 data ParseData = ParseData {
+  start :: Position,
+  end :: Position
+}
+
+data Position = Position { 
   row :: Int
   , col :: Int
-  , text :: String
-  -- TODO Add Filename
 }
 
 class ParseTerm a where
@@ -85,9 +88,13 @@ fcall fName = do
 
 addParseData :: GenParser Char st (ParseData -> a) -> GenParser Char st a
 addParseData parser = do
-  pos <- sourcePos
+  startPos <- sourcePos
   result <- parser
-  return $ result ParseData {row = sourceLine pos, col = sourceColumn pos, text = ""}
+  endPos <- sourcePos
+  return $ result ParseData {
+    start = Position { row = sourceLine startPos, col = sourceColumn startPos } 
+    , end = Position { row = sourceLine endPos, col = sourceColumn endPos }
+  }
 
 sourcePos :: Monad m => Text.Parsec.Prim.ParsecT s u m SourcePos
 sourcePos = statePos `Control.Monad.liftM` getParserState
