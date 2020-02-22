@@ -1,16 +1,24 @@
-module Arith.Parser (parseLine, ParseTerm(..)) where
+module Arith.Parser (parseLine, ParseTerm(..), ParseData) where
 
 import Text.ParserCombinators.Parsec
 
+data ParseData = ParseData {
+  row :: Int
+  , col :: Int
+  , text :: String
+}
+
+dummyParseData = ParseData { row = 0, col = 0, text = "" }
+
 class ParseTerm a where
-  makeTrue :: a
-  makeFalse :: a
-  makeIf :: a -> a -> a -> a
-  makeZero :: a
-  makeSucc :: a -> a
-  makePred :: a -> a
-  makeIsZero :: a -> a
-  intToTerm :: Int -> a
+  makeTrue :: ParseData -> a
+  makeFalse :: ParseData -> a
+  makeIf :: ParseData -> a -> a -> a -> a
+  makeZero :: ParseData -> a
+  makeSucc :: ParseData -> a -> a
+  makePred :: ParseData -> a -> a
+  makeIsZero :: ParseData -> a -> a
+  intToTerm :: ParseData -> Int -> a
 
 parseLine :: ParseTerm a => String -> Either ParseError a
 parseLine = parse line "(unknown)"
@@ -38,22 +46,22 @@ term = do
   return term'
 
 true :: ParseTerm a => GenParser Char st a
-true = string "true" >> return makeTrue
+true = string "true" >> return (makeTrue dummyParseData)
 
 false :: ParseTerm a => GenParser Char st a
-false = string "false" >> return makeFalse
+false = string "false" >> return (makeFalse dummyParseData)
 
 num :: ParseTerm a => GenParser Char st a
-num = intToTerm . read <$> many1 digit
+num = intToTerm dummyParseData . read <$> many1 digit
 
 succ' :: ParseTerm a => GenParser Char st a
-succ' = makeSucc <$> fcall "succ"
+succ' = makeSucc dummyParseData <$> fcall "succ"
 
 pred' :: ParseTerm a => GenParser Char st a
-pred' = makePred <$> fcall "pred"
+pred' = makePred dummyParseData <$> fcall "pred"
 
 iszero :: ParseTerm a => GenParser Char st a
-iszero = makeIsZero <$> fcall "iszero"
+iszero = makeIsZero dummyParseData <$> fcall "iszero"
 
 if' :: ParseTerm a => GenParser Char st a
 if' = do
@@ -67,7 +75,7 @@ if' = do
   spaces
   alternative <- term
   spaces
-  return $ makeIf predicate consequent alternative
+  return $ makeIf dummyParseData predicate consequent alternative
 
 fcall fName = do
   string fName
