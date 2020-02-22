@@ -8,6 +8,7 @@ data ParseData = ParseData {
   row :: Int
   , col :: Int
   , text :: String
+  -- TODO Add Filename
 }
 
 class ParseTerm a where
@@ -82,7 +83,7 @@ fcall fName = do
   string ")"
   return term'
 
-addParseData :: ParseTerm a => GenParser Char st (ParseData -> a) -> GenParser Char st a
+addParseData :: GenParser Char st (ParseData -> a) -> GenParser Char st a
 addParseData parser = do
   pos <- sourcePos
   result <- parser
