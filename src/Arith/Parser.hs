@@ -1,21 +1,21 @@
 module Arith.Parser (parseLine) where
 
 import Text.ParserCombinators.Parsec
-import Arith.Syntax(Term(..), intToTerm)
+import Arith.Termable(Termable(..))
 
-parseLine :: String -> Either ParseError Term
+parseLine :: Termable a => String -> Either ParseError a
 parseLine = parse line "(unknown)"
 
 -- TODO should be able to use either Term or AugmentedTerm
 -- which means that the return type is parameterized
-line :: GenParser Char st Term
+line :: Termable a => GenParser Char st a
 line = do
   term' <- term
   string ";"
   optional $ string "\n"
   return term'
 
-term :: GenParser Char st Term
+term :: Termable a => GenParser Char st a
 term = do
   optional spaces
   term' <- try true
@@ -28,25 +28,25 @@ term = do
   optional spaces
   return term'
 
-true :: GenParser Char st Term
-true = string "true" >> return TTrue
+true :: Termable a => GenParser Char st a
+true = string "true" >> return makeTrue
 
-false :: GenParser Char st Term
-false = string "false" >> return TFalse
+false :: Termable a => GenParser Char st a
+false = string "false" >> return makeFalse
 
-num :: GenParser Char st Term
+num :: Termable a => GenParser Char st a
 num = intToTerm . read <$> many1 digit
 
-succ' :: GenParser Char st Term
-succ' = Succ <$> fcall "succ"
+succ' :: Termable a => GenParser Char st a
+succ' = makeSucc <$> fcall "succ"
 
-pred' :: GenParser Char st Term
-pred' = Pred <$> fcall "pred"
+pred' :: Termable a => GenParser Char st a
+pred' = makePred <$> fcall "pred"
 
-iszero :: GenParser Char st Term
-iszero = IsZero <$> fcall "iszero"
+iszero :: Termable a => GenParser Char st a
+iszero = makeIsZero <$> fcall "iszero"
 
-if' :: GenParser Char st Term
+if' :: Termable a => GenParser Char st a
 if' = do
   string "if"
   spaces
@@ -58,9 +58,8 @@ if' = do
   spaces
   alternative <- term
   spaces
-  return $ If predicate consequent alternative
+  return $ makeIf predicate consequent alternative
 
-fcall :: String -> GenParser Char st Term
 fcall fName = do
   string fName
   string "("

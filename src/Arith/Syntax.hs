@@ -1,5 +1,7 @@
 module Arith.Syntax (Term(..), isNumeric, isVal, intToTerm) where
 
+import Arith.Termable(Termable(..))
+
 data Term =
   TTrue
   | TFalse
@@ -10,6 +12,20 @@ data Term =
   | IsZero Term
   deriving Show
 
+instance Termable Term where
+  makeTrue = TTrue
+  makeFalse = TFalse
+  makeIf = If
+  makeZero = Zero
+  makeSucc = Succ
+  makePred = Pred
+  makeIsZero = IsZero
+  
+  intToTerm n =
+    if n <= 0 then
+      Zero
+    else
+      Succ $ intToTerm $ n - 1
 
 isNumeric :: Term -> Bool
 
@@ -25,9 +41,3 @@ isVal TTrue = True
 isVal TFalse = False
 isVal term = isNumeric term
 
-intToTerm :: Int -> Term
-intToTerm n =
-  if n <= 0 then
-    Zero
-  else
-    Succ $ intToTerm $ n - 1
