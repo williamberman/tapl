@@ -1,6 +1,6 @@
-module Arith.Syntax (Term(..), isNumeric, isVal, intToTerm) where
+module Arith.Syntax (Term(..), isNumeric, isVal) where
 
-import Arith.Termable(Termable(..))
+import Arith.Parser(ParseTerm(..))
 
 data Term =
   TTrue
@@ -12,7 +12,7 @@ data Term =
   | IsZero Term
   deriving Show
 
-instance Termable Term where
+instance ParseTerm Term where
   makeTrue = TTrue
   makeFalse = TFalse
   makeIf = If
@@ -20,7 +20,7 @@ instance Termable Term where
   makeSucc = Succ
   makePred = Pred
   makeIsZero = IsZero
-  
+
   intToTerm n =
     if n <= 0 then
       Zero
