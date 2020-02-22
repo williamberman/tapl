@@ -5,8 +5,8 @@ import Text.ParserCombinators.Parsec
 import qualified Control.Monad
 
 data ParseData = ParseData {
-  row :: Line
-  , col :: Column
+  row :: Int
+  , col :: Int
   , text :: String
 }
 
