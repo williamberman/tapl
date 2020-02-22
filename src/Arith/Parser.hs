@@ -36,16 +36,16 @@ false = string "false" >> return TFalse
 
 -- TODO don't understand why need "read <$>"
 num :: GenParser Char st Term
-num = read <$> many1 digit >>= return . intToTerm
+num = intToTerm . read <$> many1 digit
 
 succ' :: GenParser Char st Term
-succ' = fcall "succ" >>= return . Succ
+succ' = Succ <$> fcall "succ"
 
 pred' :: GenParser Char st Term
-pred' = fcall "pred" >>= return . Pred
+pred' = Pred <$> fcall "pred" 
 
 iszero :: GenParser Char st Term
-iszero = fcall "iszero" >>= return . Pred
+iszero = IsZero <$> fcall "iszero"
 
 if' :: GenParser Char st Term
 if' = do
