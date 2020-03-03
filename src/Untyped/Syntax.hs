@@ -1,4 +1,4 @@
-module Untyped.Syntax (Term(..), substitute) where
+module Untyped.Syntax (Term(..), makeReplacement, substitute, shift) where
 
 type DBIndex = Integer
 
@@ -6,19 +6,23 @@ data Term =
   Abstraction Term
   | Application Term Term
   | Variable DBIndex
-  deriving Show
-  
-  
-substitute :: DBIndex -> Term -> Term -> Term
+  deriving (Show, Eq)
 
-substitute idx replaceWith (Abstraction t) =
-  Abstraction $ substitute (idx + 1) (shift 1 0 replaceWith) t
+data Replacement = Replacement DBIndex Term
 
-substitute idx replaceWith (Application t1 t2) =
-  Application (substitute idx replaceWith t1) (substitute idx replaceWith t2)
+makeReplacement :: DBIndex -> Term -> Replacement
+makeReplacement = Replacement
 
-substitute idx replaceWith (Variable replacingIdx) =
-  Variable $ if idx == replacingIdx then idx else replacingIdx
+substitute :: Replacement -> Term -> Term
+
+substitute (Replacement idx replaceWith) (Abstraction t) =
+  Abstraction $ substitute (Replacement (idx + 1) (shift 1 0 replaceWith)) t
+
+substitute replacement (Application t1 t2) =
+  Application (substitute replacement t1) (substitute replacement t2)
+
+substitute (Replacement idx replaceWith) (Variable replacingIdx) =
+  if idx == replacingIdx then replaceWith else Variable replacingIdx
 
 
 shift :: DBIndex -> DBIndex -> Term -> Term

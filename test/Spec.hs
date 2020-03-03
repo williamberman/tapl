@@ -1,5 +1,25 @@
+import Test.Tasty
+import Test.Tasty.HUnit
+
 import Untyped.Syntax(Term(..))
 import Untyped.Semantics(eval)
 
 main :: IO ()
-main = putStrLn "Test suite not yet implemented"
+main = defaultMain tests
+
+tests :: TestTree
+tests = testGroup "Tests" [untyped]
+
+untyped = testGroup "Untyped lambda calculus"
+  [ testCase "Leaves index of bound variable on substitution" $
+      eval (Application (Abstraction $ Abstraction $ Variable 1)
+                        (Abstraction $ Variable 0))
+      @?= 
+      (Right $ Abstraction $ Abstraction $ Variable 0)
+
+  , testCase "Update index of free variable on substitution" $
+      eval (Application (Abstraction $ Abstraction $ Variable 1) 
+                        (Abstraction $ Variable 1)) 
+      @?= 
+      (Right $ Abstraction $ Abstraction $ Variable 2)
+  ]
