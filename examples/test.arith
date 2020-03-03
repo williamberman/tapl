@@ -1,0 +1,6 @@
+succ(1);
+pred(2);
+if iszero(0) then 1 else 0;
+if iszero(1) then 1 else 0;
+if iszero(succ(succ(1))) then 1 else 0;
+if iszero(pred(pred(2))) then 1 else 0;

@@ -8,8 +8,9 @@ import Options.Applicative
 main :: IO ()
 main = do
   args <- execParser Cli.opts
-  let lang = getLang (Cli.lang args)
   
+  let lang = getLang (Cli.lang args)
+
   case Cli.file args of
     Just filename -> fromFile lang filename
     Nothing -> readEvalPrintLoop lang
