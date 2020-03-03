@@ -1,16 +1,13 @@
 module Main where
 
-import Lang(Lang, readEval)
-
-import qualified Arith.Lang as Arith(lang)
-import qualified Untyped.Lang as Untyped(lang)
+import Lib(LangSelector(..), getLang)
 
 main :: IO ()
 main = do
   let lang = getLang Arith
 
   let loop = do {
-    readEvalPrint $ readEval lang;
+    readEvalPrint $ lang;
     loop
   }
 
@@ -27,10 +24,3 @@ readEvalPrint readEval = do
     Right res -> putStrLn res
 
 
-data LangSelector =
-  Arith
-  | Untyped
-
-getLang :: LangSelector -> Lang a
-getLang Arith = Arith.lang
-getLang Untyped = Untyped.lang

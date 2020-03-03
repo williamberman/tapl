@@ -8,10 +8,6 @@ data Lang term = Lang
     , eval :: Evaluator term
   }
 
-class Lang' a where
-  read' :: Reader a
-  eval' :: Evalutor a
-
 makeLang parser termEvaluator = Lang
   { Lang.read = makeReader parser
   , Lang.eval = makeEvaluator termEvaluator
