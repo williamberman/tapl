@@ -8,6 +8,7 @@ import qualified Untyped.Lang as Untyped(lang)
 data LangSelector =
   Arith
   | Untyped
+  deriving (Read, Show)
 
 getLang :: LangSelector -> String -> Either String String
 getLang Arith = readEval Arith.lang
