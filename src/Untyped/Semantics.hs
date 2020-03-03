@@ -21,19 +21,20 @@ eval term = case eval1 term of
   Stop term' -> Right term'
 
 
+-- Repetition in implementation ensures consistent reduction order
 eval1 :: Term -> EvalStepResult
 
-eval1 (Application t1 t2) =
-  case (t1, t2) of
+eval1 (Application (Abstraction t1) (Abstraction t2)) =
+    Continue $ shift (-1) 0 $ substitute (makeReplacement 0 $ shift 1 0 $ Abstraction t2) t1
 
-  (Abstraction t1', Abstraction _) -> 
-    Continue $ shift (-1) 0 $ substitute (makeReplacement 0 $ shift 1 0 t2) t1'
+eval1 (Application t1 (Abstraction t2)) =
+  andThen (\t1' -> Continue $ Application t1' $ Abstraction t2) (eval1 t1)
 
-  (_, Abstraction _) -> andThen (\t1' -> Continue $ Application t1' t2) (eval1 t1)
-
-  (Abstraction _, _) -> andThen (Continue . Application t1) (eval1 t2)
-
-  _ -> Stop $ Application t1 t2
+eval1 (Application (Abstraction t1) t2) =
+  andThen (Continue . Application (Abstraction t1)) (eval1 t2)
+  
+eval1 (Application t1 t2) = 
+  andThen (\t1' -> Continue $ Application t1' t2) (eval1 t1)
 
 eval1 t = Stop t
 
