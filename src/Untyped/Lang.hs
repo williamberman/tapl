@@ -7,5 +7,3 @@ import Untyped.Semantics(eval)
 
 lang = makeLang parseLine (eval . applyIndices)
 
-foo = eval . applyIndices
-
