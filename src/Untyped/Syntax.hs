@@ -3,6 +3,7 @@ module Untyped.Syntax (Term(..), makeReplacement, substitute, shift, applyIndice
 import Untyped.Syntax0 (Term0(..))
 
 import qualified Data.Map.Strict as Map
+import qualified Common.Utils as Utils
 
 type DBIndex = Integer
 
@@ -32,7 +33,7 @@ applyIndices' Environment {globals = globals', locals = locals'} (Variable0 name
     (_, Just globalIdx) -> (Variable globalIdx, globals')
     (_, _) -> (Variable newGlobalIdx, Map.insert name newGlobalIdx globals')
   where
-    newGlobalIdx = (+ 1) $ maximum $ Map.elems globals'
+    newGlobalIdx = (+ 1) $ Utils.safeMaximum $ Map.elems globals'
 
 applyIndices' env (Application0 t1 t2) =
   (Application t1' t2', globals'')
