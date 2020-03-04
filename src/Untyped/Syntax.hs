@@ -13,6 +13,9 @@ data Term =
   | Variable DBIndex
   deriving (Show, Eq)
 
+
+-- applyIndices
+
 type VariableIndices = Map.Map String DBIndex
 data Environment = Environment
   { globals :: VariableIndices
@@ -46,6 +49,9 @@ applyIndices' env (Abstraction0 name term) =
   where
     newLocals = Map.insert name 0 $ Map.map (+1) $ locals env
     (term', newGlobals) = applyIndices' (env { locals = newLocals }) term
+    
+    
+ -- substitute
 
 data Replacement = Replacement DBIndex Term
 
@@ -64,6 +70,8 @@ substitute (Replacement idx replaceWith) (Variable replacingIdx) =
   if idx == replacingIdx then replaceWith else Variable replacingIdx
 
 
+-- shift
+
 shift :: DBIndex -> DBIndex -> Term -> Term
 
 shift increaseBy numBinders (Abstraction t) =
@@ -74,7 +82,6 @@ shift increaseBy numBinders (Application t1 t2) =
 
 shift increaseBy numBinders (Variable idx) =
   Variable $ if isFree numBinders idx then increaseBy + idx else idx
-
 
 -- A free variable's index reaches outside the number of binders present for it
 isFree :: DBIndex -> DBIndex -> Bool
