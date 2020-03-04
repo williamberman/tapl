@@ -46,9 +46,18 @@ variable = addParseData $ makeVariable <$> variableIdentifier
 application :: ParseTerm a => GenParser Char st a
 application =
   addParseData $ do
+    char '('
+    spaces
     t1 <- term
     spaces
-    makeApplication t1 <$> term
+    char ')'
+    spaces
+    char '('
+    spaces
+    t2 <- term
+    spaces
+    char ')'
+    return $ makeApplication t1 t2
 
 variableIdentifier :: GenParser Char st String
 variableIdentifier = many1 alphaNum

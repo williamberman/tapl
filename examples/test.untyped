@@ -4,3 +4,6 @@ lambda foo. lambda bar. bar;
 lambda foo. lambda foo. foo;
 lambda foo. lambda bar. baz;
 lambda foo. lambda bar. lambda baz. foo;
+(lambda foo. foo) (lambda foo. foo);
+(lambda foo. lambda bar. foo) (lambda foo. foo);
+(lambda foo. (lambda bar. bar) (lambda baz. foo)) (lambda foo. foo);
