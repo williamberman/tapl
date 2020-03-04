@@ -1,18 +1,7 @@
 module Arith.Parser (parseLine, ParseTerm(..), ParseData) where
 
-import qualified Text.Parsec.Prim
 import Text.ParserCombinators.Parsec
-import qualified Control.Monad
-
-data ParseData = ParseData {
-  start :: Position,
-  end :: Position
-}
-
-data Position = Position { 
-  row :: Int
-  , col :: Int
-}
+import Common.Parser
 
 class ParseTerm a where
   makeTrue :: ParseData -> a
@@ -30,8 +19,7 @@ parseLine = parse line "(unknown)"
 line :: ParseTerm a => GenParser Char st a
 line = do
   term' <- term
-  string ";"
-  optional $ string "\n"
+  eol
   return term'
 
 term :: ParseTerm a => GenParser Char st a
@@ -85,16 +73,3 @@ fcall fName = do
   term' <- term
   string ")"
   return term'
-
-addParseData :: GenParser Char st (ParseData -> a) -> GenParser Char st a
-addParseData parser = do
-  startPos <- sourcePos
-  result <- parser
-  endPos <- sourcePos
-  return $ result ParseData {
-    start = Position { row = sourceLine startPos, col = sourceColumn startPos } 
-    , end = Position { row = sourceLine endPos, col = sourceColumn endPos }
-  }
-
-sourcePos :: Monad m => Text.Parsec.Prim.ParsecT s u m SourcePos
-sourcePos = statePos `Control.Monad.liftM` getParserState

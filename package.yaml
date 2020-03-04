@@ -25,6 +25,7 @@ dependencies:
 - tasty
 - tasty-hunit
 - optparse-applicative
+- containers
 
 library:
   source-dirs: src

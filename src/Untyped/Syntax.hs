@@ -1,4 +1,8 @@
-module Untyped.Syntax (Term(..), makeReplacement, substitute, shift) where
+module Untyped.Syntax (Term(..), makeReplacement, substitute, shift, applyIndices) where
+
+import Untyped.Syntax0 (Term0(..))
+
+import qualified Data.Map.Strict as Map
 
 type DBIndex = Integer
 
@@ -7,6 +11,40 @@ data Term =
   | Application Term Term
   | Variable DBIndex
   deriving (Show, Eq)
+
+type VariableIndices = Map.Map String DBIndex
+data Environment = Environment
+  { globals :: VariableIndices
+  , locals :: VariableIndices
+  }
+
+applyIndices :: Term0 -> Term
+applyIndices term =
+    term'
+  where
+    (term', _) = applyIndices' (Environment{ globals = Map.empty, locals = Map.empty }) term
+
+applyIndices' :: Environment -> Term0 -> (Term, VariableIndices)
+
+applyIndices' Environment {globals = globals', locals = locals'} (Variable0 name) =
+  case (locals' Map.!? name, globals' Map.!? name) of
+    (Just localIdx, _) -> (Variable localIdx, globals')
+    (_, Just globalIdx) -> (Variable globalIdx, globals')
+    (_, _) -> (Variable newGlobalIdx, Map.insert name newGlobalIdx globals')
+  where
+    newGlobalIdx = (+ 1) $ maximum $ Map.elems globals'
+
+applyIndices' env (Application0 t1 t2) =
+  (Application t1' t2', globals'')
+  where
+    (t1', globals') = applyIndices' env t1
+    (t2', globals'') = applyIndices' (env { globals = globals'' }) t2
+
+applyIndices' env (Abstraction0 name term) =
+  (Abstraction term', newGlobals)
+  where
+    newLocals = Map.insert name 0 $ Map.map (+1) $ locals env
+    (term', newGlobals) = applyIndices' (env { locals = newLocals }) term
 
 data Replacement = Replacement DBIndex Term
 
