@@ -1,6 +1,7 @@
 module Arith.Semantics (eval) where
 
 import Arith.Syntax(Term(..), isNumeric)
+import Common.Semantics
 
 ----- eval -----
 
@@ -9,13 +10,7 @@ data Out =
   | OutI Int
   deriving Show
 
-data EvalError = EvalError
-  { t :: Term
-  , message :: String
-  }
-  deriving Show
-
-eval :: Term -> Either EvalError Out
+eval :: Term -> Either (EvalError Term) Out
 eval term = case eval1 term of
   Error err -> Left err
   Continue next -> eval next
@@ -23,12 +18,7 @@ eval term = case eval1 term of
 
 ----- eval1 -----
 
-data EvalStepResult =
-  Error EvalError
-  | Continue Term
-  | Stop Term
-
-eval1 :: Term -> EvalStepResult
+eval1 :: Term -> EvalStepResult Term
 
 -- If
 eval1 (If TTrue consequent _) = Continue consequent
@@ -74,7 +64,7 @@ eval1 term = Stop term
 
 ------ convertToOutput ------
 
-convertToOutput :: Term -> Either EvalError Out
+convertToOutput :: Term -> Either (EvalError Term) Out
 
 convertToOutput TTrue = Right $ OutB True
 convertToOutput TFalse = Right $ OutB False
@@ -91,11 +81,3 @@ convertToOutput term =
   Left $ EvalError { t = term
                    , message = "Could not complete evaluation"
                    }
-
------ andThen -----
-
--- TODO pull this into a better abstraction
-andThen :: (Term -> EvalStepResult) ->  EvalStepResult -> EvalStepResult
-andThen _ (Error err) = Error err
-andThen f (Stop term) = f term
-andThen f (Continue term) = f term
