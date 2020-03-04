@@ -1,22 +1,46 @@
-module Untyped.Parser (parseLine, ParseTerm(..)) where
+module Untyped.Parser (parseStatement, ParseTerm(..), ParseAssignment(..), ParseStatement(..)) where
 
 import Text.ParserCombinators.Parsec
 import Common.Parser
+
+data ParseStatement a b =
+  ParsedAssignment a
+  | ParsedTerm b
+
+class ParseAssignment a where
+  makeAssignment :: String -> b -> ParseData -> a
 
 class ParseTerm a where
   makeAbstraction :: String -> a -> ParseData -> a
   makeVariable :: String -> ParseData -> a
   makeApplication :: a -> a -> ParseData -> a
 
-parseLine :: ParseTerm a => String -> Either ParseError a
-parseLine = parse line "(unknown)"
+parseStatement :: ParseTerm a => ParseTerm b => ParseAssignment a => String -> Either ParseError (ParseStatement a b)
+parseStatement = parse statement "(unknown)"
 
-line :: ParseTerm a => GenParser Char st a
-line = do
-  term' <- term
+statement :: ParseTerm a => ParseTerm b => ParseAssignment a => GenParser Char st (ParseStatement a b)
+statement = do
+  optional spaces
+  parsed <- try statementAssignment
+    <|> try statementTerm
   string ";"
-  optional eol
-  return term'
+  optional spaces
+  return parsed
+
+statementAssignment :: ParseAssignment a => ParseTerm a => GenParser Char st (ParseStatement a b)
+statementAssignment = ParsedAssignment <$> assignment
+
+statementTerm ::  ParseTerm b => GenParser Char st (ParseStatement a b)
+statementTerm = ParsedTerm <$> term
+
+assignment :: ParseAssignment a => ParseTerm a => GenParser Char st a
+assignment =
+  addParseData $ do
+    varIdent <- variableIdentifier
+    optional spaces
+    char '='
+    optional spaces
+    makeAssignment varIdent <$> term
 
 term :: ParseTerm a => GenParser Char st a
 term = do
@@ -44,15 +68,15 @@ application :: ParseTerm a => GenParser Char st a
 application =
   addParseData $ do
     char '('
-    spaces
+    optional spaces
     t1 <- term
-    spaces
+    optional spaces
     char ')'
-    spaces
+    optional spaces
     char '('
-    spaces
+    optional spaces
     t2 <- term
-    spaces
+    optional spaces
     char ')'
     return $ makeApplication t1 t2
 

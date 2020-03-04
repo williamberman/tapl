@@ -1,0 +1,35 @@
+tru = lambda t. lambda f. t;
+fls = lambda t. lambda f. f;
+test = lambda predicate. lambda consequent. lambda alternative. predicate consequent alternative;
+and = lambda a. lambda b. a b fls;
+or = lambda a. lambda b. a tru b;
+not = lambda a. a fls tru;
+
+pair = lambda f. lambda s. p fs;
+fst = lambda p. p tru;
+snd = lambda p. p fls;
+
+c0 = lambda s. lambda z. s z;
+c1 = scc c0;
+c2 = scc c1;
+c3 = scc c2;
+scc = lambda n. lambda s. lambda z s (n s z);
+prd = lambda m. fst (m (lambda p. pair (snd p) (plus c1 (snd p))) (pair c0 c0));
+iszro = lambda n. n (lambda _. fls) tru;
+areEqual = lambda n. lambda m. and (iszro (sub n m)) (iszro (sub m n));
+plus = lambda m. lambda n. lambda s. lambda z. m s (n s z);
+sub = lambda m. lambda n. n pred m;
+times = lambda m. lambda n. m (plus n) c0;
+pow = lambda m. lambda n. m n;
+
+cons = lambda h. lambda t. lambda c. lambda n. c h (t c n);
+nil = lambda c. lambda n. n;
+isnil = lambda l. l (lambda _. lambda _. fls) tru;
+head = lambda l. (lambda h. lambda _. h) fls;
+tail = lambda l. fst (l (lambda h. lambda p. pair (snd p) (cons h (snd p))) (pair nil nil));
+
+omega = (lambda x. x x) (lambda x. x x);
+fix = lambda f. (lambda x. f (lambda y. x x y)) (lambda x. f (lambda y. x x y));
+Y = lambda f. (lambda x. f (x x)) (lambda x. f (x x));
+
+factorial = fix (lambda recur. lambda n. test (iszro n) c1 (times n (recur (prd n))));
