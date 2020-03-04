@@ -24,9 +24,6 @@ term = do
   term' <- try abstraction
     <|> try variable
     <|> application
---  term' <- try application
---    <|> try abstraction
---    <|> variable
   optional spaces
   return term'
 
