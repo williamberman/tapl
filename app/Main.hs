@@ -8,7 +8,7 @@ import Options.Applicative
 main :: IO ()
 main = do
   args <- execParser Cli.opts
-  
+
   let lang = getLang (Cli.lang args)
 
   case Cli.file args of
@@ -20,7 +20,8 @@ fromFile readEval filename = do
   fromFileHelper readEval $ lines content
 
 fromFileHelper readEval [] = return ()
-fromFileHelper readEval (line : lines) =
+fromFileHelper readEval (line : lines) = do
+    putStrLn line
     case readEval line of
       Left err -> do
         putStrLn "Error"

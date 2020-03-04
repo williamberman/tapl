@@ -1,4 +1,6 @@
 module Common.Utils (safeMaximum) where
 
-safeMaximum [] = 0
-safeMaximum xs = maximum xs
+-- TODO this needs to be more generic
+safeMaximum :: Integer -> [Integer] -> Integer
+safeMaximum i [] = i
+safeMaximum i xs = maximum xs

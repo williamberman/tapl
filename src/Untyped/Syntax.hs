@@ -36,7 +36,7 @@ applyIndices' Environment {globals = globals', locals = locals'} (Variable0 name
     (_, Just globalIdx) -> (Variable globalIdx, globals')
     (_, _) -> (Variable newGlobalIdx, Map.insert name newGlobalIdx globals')
   where
-    newGlobalIdx = (+ 1) $ Utils.safeMaximum $ Map.elems globals'
+    newGlobalIdx = (+ 1) $ (Utils.safeMaximum $ Utils.safeMaximum 0 $ Map.elems locals') $ Map.elems globals'
 
 applyIndices' env (Application0 t1 t2) =
   (Application t1' t2', globals'')
@@ -44,11 +44,12 @@ applyIndices' env (Application0 t1 t2) =
     (t1', globals') = applyIndices' env t1
     (t2', globals'') = applyIndices' (env { globals = globals'' }) t2
 
-applyIndices' env (Abstraction0 name term) =
-  (Abstraction term', newGlobals)
+applyIndices' Environment{globals = globals', locals = locals'} (Abstraction0 name term) =
+  (Abstraction term', globals''')
   where
-    newLocals = Map.insert name 0 $ Map.map (+1) $ locals env
-    (term', newGlobals) = applyIndices' (env { locals = newLocals }) term
+    locals'' = Map.insert name 0 $ Map.map (+1) locals'
+    globals'' = Map.map (+1) globals'
+    (term', globals''') = applyIndices' (Environment { locals = locals'', globals = globals''}) term
     
     
  -- substitute

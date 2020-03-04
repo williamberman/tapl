@@ -19,7 +19,8 @@ parseLine = parse line "(unknown)"
 line :: ParseTerm a => GenParser Char st a
 line = do
   term' <- term
-  eol
+  string ";"
+  optional eol
   return term'
 
 term :: ParseTerm a => GenParser Char st a

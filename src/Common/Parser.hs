@@ -27,7 +27,5 @@ addParseData parser = do
 sourcePos :: Monad m => Text.Parsec.Prim.ParsecT s u m SourcePos
 sourcePos = statePos `Control.Monad.liftM` getParserState
 
-eol :: GenParser Char st ()
-eol = do
-  string ";"
-  optional $ string "\n"
+eol :: GenParser Char state ()
+eol = (char '\n' <|> (char '\r' >> option '\n' (char '\n'))) >> return ()
