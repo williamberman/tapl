@@ -1,7 +1,8 @@
 module Main where
 
 import qualified Cli(opts, Args(..))
-import Lib(getLang)
+import Lib(getREPL)
+import REPL(readEvalPrint)
 
 import Options.Applicative
 
@@ -9,42 +10,37 @@ main :: IO ()
 main = do
   args <- execParser Cli.opts
 
-  let lang = getLang (Cli.lang args)
+  let repl = getREPL (Cli.lang args)
 
   case Cli.file args of
-    Just filename -> fromFile lang filename
-    Nothing -> readEvalPrintLoop lang
+    Just filename -> fromFile repl filename
+    Nothing -> readEvalPrintLoop repl
 
 fromFile readEval filename = do
   content <- readFile filename
   fromFileHelper readEval $ lines content
 
-fromFileHelper readEval [] = return ()
-fromFileHelper readEval (line : lines) = do
+fromFileHelper repl [] = return ()
+fromFileHelper repl (line : lines) = do
     putStrLn line
-    case readEval line of
+    case readEvalPrint repl line of
       Left err -> do
         putStrLn "Error"
         putStrLn err
-      Right res -> do
-        putStrLn res
-        fromFileHelper readEval lines
+      Right (out, repl') -> do
+        putStrLn out
+        fromFileHelper repl' lines
 
-readEvalPrintLoop readEval = do
-  let loop = do
-        readEvalPrint readEval
-        loop
-  loop
-
-readEvalPrint :: (String -> Either String String) -> IO ()
-readEvalPrint readEval = do
+readEvalPrintLoop repl = do
   line <- getLine
 
-  case readEval line of
+  case readEvalPrint repl line of
     Left err -> do
       putStrLn "Error"
       putStrLn err
-    Right res -> putStrLn res
+    Right (out, repl') -> do
+      putStrLn out
+      readEvalPrintLoop repl'
 
 
 

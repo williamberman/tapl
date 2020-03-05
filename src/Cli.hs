@@ -1,6 +1,6 @@
 module Cli (opts, Args(..)) where
 
-import Lib(LangSelector(..), getLang)
+import Lib(LangSelector(..))
 
 import Options.Applicative
 import Data.Semigroup ((<>))

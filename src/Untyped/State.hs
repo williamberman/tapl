@@ -9,6 +9,7 @@ module Untyped.State
   , State
   , makeState
   , removeLocal
+  , initialState
   ) where
 
 import qualified Common.Utils    as Utils
@@ -61,3 +62,6 @@ type State = ()
 
 makeState :: Environment -> State
 makeState = undefined
+
+initialState :: State
+initialState = undefined

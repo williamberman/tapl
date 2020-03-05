@@ -1,4 +1,4 @@
-module Untyped.Syntax0 (Assignment0(..), Term0(..), parseTermToTerm0) where
+module Untyped.Syntax0 (Statement0(..), Assignment0(..), Term0(..), parseTermToTerm0, parseStatementToStatement0) where
 
 import Untyped.Parser (ParseTerm(..), ParseAssignment(..), ParseStatement(..))
 
@@ -7,14 +7,17 @@ import Untyped.Parser (ParseTerm(..), ParseAssignment(..), ParseStatement(..))
 data Statement0 =
   StatementTerm Term0
   | StatementAssignment Assignment0
+  deriving Show
 
 data Term0 =
   Abstraction0 String Term0
   | Application0 Term0 Term0
   | Variable0 String
+  deriving Show
 
 data Assignment0 =
   Assignment0 String Term0
+  deriving Show
 
 parseStatementToStatement0 :: ParseStatement -> Statement0
 parseStatementToStatement0 (ParsedTerm term) = StatementTerm $ parseTermToTerm0 term
