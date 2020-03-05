@@ -54,8 +54,8 @@ removeLocal :: String -> Environment -> Environment
 removeLocal name Environment {globals = globals', locals = locals'} =
   Environment {globals = globals'', locals = locals''}
   where
-    locals'' = Map.delete name $ Map.map ((-) 1) locals'
-    globals'' = Map.map ((-) 1) globals'
+    locals'' = Map.delete name $ Map.map (1 -) locals'
+    globals'' = Map.map (1 -) globals'
 
 type State = ()
 
