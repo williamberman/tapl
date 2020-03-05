@@ -1,11 +1,7 @@
 module Untyped.Syntax (Term(..), makeReplacement, substitute, shift, applyIndices) where
 
 import Untyped.Syntax0 (Term0(..))
-
-import qualified Data.Map.Strict as Map
-import qualified Common.Utils as Utils
-
-type DBIndex = Integer
+import Untyped.State
 
 data Term =
   Abstraction Term
@@ -16,41 +12,33 @@ data Term =
 
 -- applyIndices
 
-type VariableIndices = Map.Map String DBIndex
-data Environment = Environment
-  { globals :: VariableIndices
-  , locals :: VariableIndices
-  }
-
-applyIndices :: Term0 -> Term
+applyIndices :: Term0 -> (Term, State)
 applyIndices term =
-    term'
+  (term', makeState env)
   where
-    (term', _) = applyIndices' (Environment{ globals = Map.empty, locals = Map.empty }) term
+    (term', env) = applyIndices' makeEnvironment term
 
-applyIndices' :: Environment -> Term0 -> (Term, VariableIndices)
+applyIndices' :: Environment -> Term0 -> (Term, Environment)
 
-applyIndices' Environment {globals = globals', locals = locals'} (Variable0 name) =
-  case (locals' Map.!? name, globals' Map.!? name) of
-    (Just localIdx, _) -> (Variable localIdx, globals')
-    (_, Just globalIdx) -> (Variable globalIdx, globals')
-    (_, _) -> (Variable newGlobalIdx, Map.insert name newGlobalIdx globals')
+applyIndices' env (Variable0 name) =
+  case lookUp name env of
+    LookUpResult{local = Just localIdx} -> (Variable localIdx, env)
+    LookUpResult{global = Just globalIdx} -> (Variable globalIdx, env)
+    _ -> (Variable newGlobalIdx, env')
   where
-    newGlobalIdx = (+ 1) $ (Utils.safeMaximum $ Utils.safeMaximum 0 $ Map.elems locals') $ Map.elems globals'
+    (newGlobalIdx, env')  = addGlobal name env
 
 applyIndices' env (Application0 t1 t2) =
-  (Application t1' t2', globals'')
+  (Application t1' t2', env'')
   where
-    (t1', globals') = applyIndices' env t1
-    (t2', globals'') = applyIndices' (env { globals = globals'' }) t2
+    (t1', env') = applyIndices' env t1
+    (t2', env'') = applyIndices' env' t2
 
-applyIndices' Environment{globals = globals', locals = locals'} (Abstraction0 name term) =
-  (Abstraction term', globals''')
+applyIndices' env (Abstraction0 name term) = (Abstraction term', env'')
   where
-    locals'' = Map.insert name 0 $ Map.map (+1) locals'
-    globals'' = Map.map (+1) globals'
-    (term', globals''') = applyIndices' (Environment { locals = locals'', globals = globals''}) term
-    
+    (term', env') = applyIndices' (addLocal name env) term
+    env'' = removeLocal name env'
+
     
  -- substitute
 
