@@ -1,24 +1,26 @@
-module Untyped.Parser (parseStatement, ParseTerm(..), ParseAssignment(..), ParseStatement(..)) where
+module Untyped.Parser (parseStatement, ParseStatement(..), ParseTerm(..), ParseAssignment(..)) where
 
 import Text.ParserCombinators.Parsec
 import Common.Parser
 
-data ParseStatement a b =
-  ParsedAssignment a
-  | ParsedTerm b
+-- TODO, I'd like to abstract the behavior for these concrete data definitions into typeclasses
 
-class ParseAssignment a where
-  makeAssignment :: String -> b -> ParseData -> a
+data ParseStatement =
+  ParsedTerm ParseTerm
+  | ParsedAssignment ParseAssignment
 
-class ParseTerm a where
-  makeAbstraction :: String -> a -> ParseData -> a
-  makeVariable :: String -> ParseData -> a
-  makeApplication :: a -> a -> ParseData -> a
+data ParseTerm =
+  ParseAbstraction String ParseTerm ParseData
+  | ParseApplication ParseTerm ParseTerm ParseData
+  | ParseVariable String ParseData
 
-parseStatement :: ParseTerm a => ParseTerm b => ParseAssignment a => String -> Either ParseError (ParseStatement a b)
+data ParseAssignment =
+  ParseAssignment String ParseTerm ParseData
+
+parseStatement :: String -> Either ParseError ParseStatement
 parseStatement = parse statement "(unknown)"
 
-statement :: ParseTerm a => ParseTerm b => ParseAssignment a => GenParser Char st (ParseStatement a b)
+statement :: GenParser Char st ParseStatement
 statement = do
   optional spaces
   parsed <- try statementAssignment
@@ -27,22 +29,22 @@ statement = do
   optional spaces
   return parsed
 
-statementAssignment :: ParseAssignment a => ParseTerm a => GenParser Char st (ParseStatement a b)
+statementAssignment :: GenParser Char st ParseStatement
 statementAssignment = ParsedAssignment <$> assignment
 
-statementTerm ::  ParseTerm b => GenParser Char st (ParseStatement a b)
+statementTerm :: GenParser Char st ParseStatement
 statementTerm = ParsedTerm <$> term
 
-assignment :: ParseAssignment a => ParseTerm a => GenParser Char st a
+assignment :: GenParser Char st ParseAssignment
 assignment =
   addParseData $ do
     varIdent <- variableIdentifier
     optional spaces
     char '='
     optional spaces
-    makeAssignment varIdent <$> term
+    ParseAssignment varIdent <$> term
 
-term :: ParseTerm a => GenParser Char st a
+term :: GenParser Char st ParseTerm
 term = do
   optional spaces
   term' <- try abstraction
@@ -51,20 +53,20 @@ term = do
   optional spaces
   return term'
 
-abstraction :: ParseTerm a => GenParser Char st a
+abstraction :: GenParser Char st ParseTerm
 abstraction =
   addParseData $ do
     string "lambda"
     spaces
     varIdent <- variableIdentifier
     string "."
-    makeAbstraction varIdent <$> term
+    ParseAbstraction varIdent <$> term
 
 
-variable :: ParseTerm a => GenParser Char st a
-variable = addParseData $ makeVariable <$> variableIdentifier
+variable :: GenParser Char st ParseTerm
+variable = addParseData $ ParseVariable <$> variableIdentifier
 
-application :: ParseTerm a => GenParser Char st a
+application :: GenParser Char st ParseTerm
 application =
   addParseData $ do
     char '('
@@ -78,7 +80,7 @@ application =
     t2 <- term
     optional spaces
     char ')'
-    return $ makeApplication t1 t2
+    return $ ParseApplication t1 t2
 
 variableIdentifier :: GenParser Char st String
 variableIdentifier = many1 alphaNum
