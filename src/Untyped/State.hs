@@ -61,12 +61,13 @@ removeLocal name Environment {globals = globals', locals = locals'} =
 type State form = Map.Map String (DBIndex, Maybe form)
 
 makeState :: Environment -> State f -> State f
-makeState Environment{globals=globals'} state =
+makeState Environment {globals = globals'} state =
   Map.fromList $ map (\(name, idx) -> (name, (idx, getForm name))) $ Map.assocs globals'
   where
-    getForm = (\name -> case Map.lookup name state of
-      Nothing -> Nothing
-      Just (_, form) -> form)
+    getForm name =
+      case Map.lookup name state of
+        Nothing -> Nothing
+        Just (_, form) -> form
 
 initialState :: State f
 initialState = Map.empty
