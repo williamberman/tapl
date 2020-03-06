@@ -12,11 +12,9 @@ data Term =
 
 -- applyIndices
 
-applyIndices :: Term0 -> (Term, State)
+applyIndices :: Term0 -> (Term, Environment)
 applyIndices term =
-  (term', makeState env)
-  where
-    (term', env) = applyIndices' makeEnvironment term
+  applyIndices' makeEnvironment term
 
 applyIndices' :: Environment -> Term0 -> (Term, Environment)
 

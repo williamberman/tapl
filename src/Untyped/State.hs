@@ -58,10 +58,21 @@ removeLocal name Environment {globals = globals', locals = locals'} =
     locals'' = Map.delete name $ Map.map (1 -) locals'
     globals'' = Map.map (1 -) globals'
 
-type State = ()
+type State form = Map.Map String (DBIndex, Maybe form)
 
-makeState :: Environment -> State
-makeState = undefined
+makeState :: Environment -> State f -> State f
+makeState Environment{globals=globals'} state =
+  Map.fromList $ map (\(name, idx) -> (name, (idx, getForm name))) $ Map.assocs globals'
+  where
+    getForm = (\name -> case Map.lookup name state of
+      Nothing -> Nothing
+      Just (_, form) -> form)
 
-initialState :: State
-initialState = undefined
+initialState :: State f
+initialState = Map.empty
+
+stateToEnvironment :: State f -> Environment
+stateToEnvironment state =
+  Environment { globals = globals', locals = Map.empty }
+  where
+    globals' = Map.map fst state

@@ -3,14 +3,14 @@ module Untyped.Lang(irepl, initialState) where
 import Untyped.Parser(parseStatement, ParseStatement(..), ParseAssignment(..))
 import Untyped.Syntax(applyIndices, Term(..))
 import qualified Untyped.Semantics as Semantics(eval)
-import Untyped.Syntax0(parseTermToTerm0, parseStatementToStatement0, Statement0(..), Assignment0(..))
+import Untyped.Syntax0(parseTermToTerm0, parseStatementToStatement0, Statement0(..), Assignment0(..), Term0)
 import Untyped.State
 import REPL(makeInternalREPL, InternalREPL)
 import Text.ParserCombinators.Parsec(ParseError)
 
 import Common.Semantics
 
-irepl :: InternalREPL Statement0 State
+irepl :: InternalREPL Statement0 (State Term0)
 irepl = makeInternalREPL parseStatement' eval Untyped.Lang.print
 
 parseStatement' :: String -> Either ParseError Statement0
@@ -19,19 +19,21 @@ parseStatement' inp =
     Left err -> Left err
     Right parsed -> Right $ parseStatementToStatement0 parsed
 
-eval :: State -> Statement0 -> Either (EvalError Term) (Term, State)
+eval :: State Term0 -> Statement0 -> Either (EvalError Term) (Term, State Term0)
 
 eval state (StatementTerm term) =
   case Semantics.eval term' of
     Left error -> Left error
-    Right term'' -> Right (term'', state)
+    Right term'' -> Right (term'', makeState env state)
   where
-    (term', state) = applyIndices term
+    (term', env) = applyIndices term
 
-eval state (StatementAssignment (Assignment0 _ term)) =
-  Left EvalError{ t = term', message = "Assignment not yet implemented" }
+eval state (StatementAssignment (Assignment0 name term)) =
+  case Semantics.eval term' of
+    Left error -> Left error
+    Right term'' -> Right (term'', makeState env state)
   where
-    (term', _) = applyIndices term
+    (term', env) = applyIndices term
 
 print :: Statement0 -> String
 print = show
