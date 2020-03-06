@@ -2,7 +2,7 @@ module Main where
 
 import qualified Cli(opts, Args(..))
 import Lib(getREPL)
-import REPL(readEvalPrint)
+import REPL(readEvalPrint, env)
 
 import Options.Applicative
 
@@ -34,13 +34,16 @@ fromFileHelper repl (line : lines) = do
 readEvalPrintLoop repl = do
   line <- getLine
 
-  case readEvalPrint repl line of
-    Left err -> do
-      putStrLn "Error"
-      putStrLn err
-    Right (out, repl') -> do
-      putStrLn out
-      readEvalPrintLoop repl'
-
-
-
+  -- TODO should be some better way to enter a "command mode"
+  if line == ":env" then do
+    putStrLn $ env repl
+    readEvalPrintLoop repl
+  else
+    case readEvalPrint repl line of
+      Left err -> do
+        putStrLn "Error"
+        putStrLn err
+        readEvalPrintLoop repl
+      Right (out, repl') -> do
+        putStrLn out
+        readEvalPrintLoop repl'

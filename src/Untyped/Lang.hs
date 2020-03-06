@@ -31,7 +31,7 @@ eval state (StatementTerm term) =
 eval state (StatementAssignment (Assignment0 name term)) =
   case Semantics.eval term' of
     Left error -> Left error
-    Right term'' -> Right (term'', makeState env state)
+    Right term'' -> Right (term'', setForm name term $ makeState env state)
   where
     (term', env) = applyIndices term
 

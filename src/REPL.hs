@@ -1,4 +1,4 @@
-module REPL (makeInternalREPL, makeREPL, readEvalPrint, REPL, InternalREPL) where
+module REPL (makeInternalREPL, makeREPL, readEvalPrint, REPL, InternalREPL, env) where
 
 type Reader internalRep = String -> Either String internalRep
 type Evaluator internalRep state = state -> internalRep -> Either String (String, state)
@@ -27,16 +27,18 @@ makeEvaluator ievaluator state irep =
     Left err -> Left $ show err
     Right (out, state) -> Right (show out, state)
 
-newtype REPL = REPL
+data REPL = REPL
   { readEvalPrint :: String -> Either String (String, REPL)
+  , env :: String
   }
 
-makeREPL :: InternalREPL i s -> s -> REPL
+makeREPL :: Show s => InternalREPL i s -> s -> REPL
 makeREPL irepl state = REPL
   { readEvalPrint = makeReadEvalPrint irepl state
+  , env = show state
   }
 
-makeReadEvalPrint :: InternalREPL i s -> s -> String -> Either String (String, REPL)
+makeReadEvalPrint :: Show s => InternalREPL i s -> s -> String -> Either String (String, REPL)
 makeReadEvalPrint irepl state input =
   case REPL.read irepl input of
     Left err -> Left err

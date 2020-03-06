@@ -10,6 +10,7 @@ module Untyped.State
   , makeState
   , removeLocal
   , initialState
+  , setForm
   ) where
 
 import qualified Common.Utils    as Utils
@@ -77,3 +78,6 @@ stateToEnvironment state =
   Environment { globals = globals', locals = Map.empty }
   where
     globals' = Map.map fst state
+
+setForm :: String -> f -> State f -> State f
+setForm name form state = Map.insertWith (\new old -> (fst old, snd new)) name (0, Just form) state
