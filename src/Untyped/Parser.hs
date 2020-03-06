@@ -47,11 +47,22 @@ assignment =
 term :: GenParser Char st ParseTerm
 term = do
   optional spaces
-  term' <- try abstraction
-    <|> try variable
-    <|> application
+  term' <- try parenTerm
+    <|> try justTerm
   optional spaces
   return term'
+
+parenTerm :: GenParser Char st ParseTerm
+parenTerm = do
+  char '('
+  optional spaces
+  term' <- justTerm
+  optional spaces
+  char ')'
+  return term'
+
+justTerm :: GenParser Char st ParseTerm
+justTerm = try abstraction <|> try variable <|> try application
 
 abstraction :: GenParser Char st ParseTerm
 abstraction =
@@ -69,18 +80,8 @@ variable = addParseData $ ParseVariable <$> variableIdentifier
 application :: GenParser Char st ParseTerm
 application =
   addParseData $ do
-    char '('
-    optional spaces
     t1 <- term
-    optional spaces
-    char ')'
-    optional spaces
-    char '('
-    optional spaces
-    t2 <- term
-    optional spaces
-    char ')'
-    return $ ParseApplication t1 t2
+    ParseApplication t1 <$> term
 
 variableIdentifier :: GenParser Char st String
 variableIdentifier = many1 alphaNum
