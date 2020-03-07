@@ -6,6 +6,7 @@ import REPL.Lang
 
 prompt = "> "
 
+-- TODO break this function up
 loop :: REPL -> InputT IO ()
 loop repl = do
   minput <- getInputLine prompt
@@ -26,5 +27,6 @@ loop repl = do
           case cmd of
             Quit -> return ()
             Env -> outputStrLn $ env repl
+            -- TODO implement this
             (LoadFile filename) -> outputStrLn $ "Command LoadFile " <> filename
           loop repl
