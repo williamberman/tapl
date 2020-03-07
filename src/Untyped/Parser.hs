@@ -11,20 +11,21 @@ data ParseStatement =
 
 data ParseTerm =
   ParseAbstraction String ParseTerm ParseData
-  | ParseApplication ParseTerm ParseTerm ParseData
+  -- TODO
+  -- | ParseApplication ParseTerm ParseTerm ParseData
+  | ParseApplication ParseTerm ParseTerm
   | ParseVariable String ParseData
 
 data ParseAssignment =
   ParseAssignment String ParseTerm ParseData
 
 parseStatement :: String -> Either ParseError ParseStatement
-parseStatement = parse statement "(unknown)"
+parseStatement input = parse statement input input
 
 statement :: GenParser Char st ParseStatement
 statement = do
   optional spaces
-  parsed <- try statementAssignment
-    <|> try statementTerm
+  parsed <- try statementAssignment <|> statementTerm
   string ";"
   optional spaces
   return parsed
@@ -47,17 +48,17 @@ assignment =
 term :: GenParser Char st ParseTerm
 term = do
   optional spaces
-  term' <- try parenTerm
-    <|> try justTerm
+  term' <- try abstraction <|> try application <|> atomicTerm
   optional spaces
   return term'
+
+atomicTerm :: GenParser Char st ParseTerm
+atomicTerm = try parenTerm <|> variable
 
 parenTerm :: GenParser Char st ParseTerm
 parenTerm = do
   char '('
-  optional spaces
-  term' <- justTerm
-  optional spaces
+  term' <- term
   char ')'
   return term'
 
@@ -69,8 +70,9 @@ abstraction =
   addParseData $ do
     string "lambda"
     spaces
-    varIdent <- variableIdentifier
-    string "."
+    varIdent <- try variableIdentifier <|> string "_"
+    optional spaces
+    char '.'
     ParseAbstraction varIdent <$> term
 
 
@@ -78,10 +80,7 @@ variable :: GenParser Char st ParseTerm
 variable = addParseData $ ParseVariable <$> variableIdentifier
 
 application :: GenParser Char st ParseTerm
-application =
-  addParseData $ do
-    t1 <- term
-    ParseApplication t1 <$> term
+application = atomicTerm `chainl1` do { spaces; return ParseApplication }
 
 variableIdentifier :: GenParser Char st String
 variableIdentifier = many1 alphaNum

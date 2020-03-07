@@ -18,7 +18,8 @@ main = do
 
 fromFile readEval filename = do
   content <- readFile filename
-  fromFileHelper readEval $ lines content
+  -- TODO removing empty lines should not be done here
+  fromFileHelper readEval $ filter (/= "") $ lines content
 
 fromFileHelper repl [] = return ()
 fromFileHelper repl (line : lines) = do

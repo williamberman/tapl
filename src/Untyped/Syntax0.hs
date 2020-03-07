@@ -25,7 +25,9 @@ parseStatementToStatement0 (ParsedAssignment assign) = StatementAssignment $ par
 
 parseTermToTerm0 :: ParseTerm -> Term0
 parseTermToTerm0 (ParseAbstraction name term _) = Abstraction0 name $ parseTermToTerm0 term
-parseTermToTerm0 (ParseApplication t1 t2 _) = Application0 (parseTermToTerm0 t1) (parseTermToTerm0 t2)
+-- TODO
+-- parseTermToTerm0 (ParseApplication t1 t2 _) = Application0 (parseTermToTerm0 t1) (parseTermToTerm0 t2)
+parseTermToTerm0 (ParseApplication t1 t2) = Application0 (parseTermToTerm0 t1) (parseTermToTerm0 t2)
 parseTermToTerm0 (ParseVariable name _) = Variable0 name
 
 parseAssignmentToAssignment0 :: ParseAssignment -> Assignment0
