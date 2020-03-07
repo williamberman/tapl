@@ -13,7 +13,12 @@ data Term0 =
   Abstraction0 String Term0
   | Application0 Term0 Term0
   | Variable0 String
-  deriving Show
+  
+instance Show Term0 where
+  show (Abstraction0 name term) = "lambda " <> name <> ". " <> show term
+  show (Application0 (Application0 t11 t12) t2) = "(" <> show (Application0 t11 t12) <> ") " <> show t2
+  show (Application0 t1 t2) = show t1 <> " " <> show t2
+  show (Variable0 name) = name
 
 data Assignment0 =
   Assignment0 String Term0

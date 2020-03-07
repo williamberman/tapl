@@ -1,4 +1,4 @@
-module Arith.Lang (irepl, initialState) where
+module Arith.Lang (irepl, initialState, printState) where
 
 import REPL(makeInternalREPL, InternalREPL)
 import Arith.Parser(parseLine)
@@ -17,3 +17,6 @@ initialState = ()
 
 print :: Term -> String
 print = show
+
+printState :: () -> String
+printState = show

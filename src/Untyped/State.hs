@@ -11,10 +11,12 @@ module Untyped.State
   , removeLocal
   , initialState
   , setForm
+  , printState
   ) where
 
 import qualified Common.Utils    as Utils
 import qualified Data.Map.Strict as Map
+import Data.List
 
 type DBIndex = Integer
 
@@ -62,9 +64,16 @@ removeLocal name Environment {globals = globals', locals = locals'} =
 
 type State form = Map.Map String (DBIndex, Maybe form)
 
+printState :: Show f => State f -> String
+printState state = intercalate "\n" $ map printAState $ Map.toList state
+
+printAState :: Show f => (String, (DBIndex, Maybe f)) -> String
+printAState (name, (_, Nothing)) = name <> " is undefined"
+printAState (name, (_, Just form)) = name <> " = " <> show form
+
 makeState :: Environment -> State f -> State f
 makeState Environment {globals = globals'} state =
-  Map.fromList $ map (\(name, idx) -> (name, (idx, getForm name))) $ Map.assocs globals'
+  Map.union state $ Map.fromList $ map (\(name, idx) -> (name, (idx, getForm name))) $ Map.assocs globals'
   where
     getForm name =
       case Map.lookup name state of

@@ -1,10 +1,11 @@
-module Untyped.Lang(irepl, initialState) where
+module Untyped.Lang(irepl, initialState, printState) where
 
 import Untyped.Parser(parseStatement, ParseStatement(..), ParseAssignment(..))
 import Untyped.Syntax(applyIndices, Term(..))
 import qualified Untyped.Semantics as Semantics(eval)
 import Untyped.Syntax0(parseTermToTerm0, parseStatementToStatement0, Statement0(..), Assignment0(..), Term0)
-import Untyped.State
+import Untyped.State(State, initialState, makeState, setForm, printState)
+import qualified Untyped.State(printState)
 import REPL(makeInternalREPL, InternalREPL)
 import Text.ParserCombinators.Parsec(ParseError)
 
