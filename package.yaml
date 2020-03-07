@@ -26,6 +26,7 @@ dependencies:
 - tasty-hunit
 - optparse-applicative
 - containers
+- haskeline
 
 library:
   source-dirs: src

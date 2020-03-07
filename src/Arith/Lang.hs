@@ -1,9 +1,11 @@
-module Arith.Lang (irepl, initialState, printState) where
+module Arith.Lang (repl) where
 
-import REPL(makeInternalREPL, InternalREPL)
+import REPL.Lang(makeInternalREPL, InternalREPL, makeREPL)
 import Arith.Parser(parseLine)
 import Arith.Syntax(Term)
 import qualified Arith.Semantics as Semantics(eval)
+
+repl = makeREPL irepl initialState printState
 
 irepl :: InternalREPL Term ()
 irepl = makeInternalREPL parseLine eval Arith.Lang.print

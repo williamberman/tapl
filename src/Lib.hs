@@ -1,8 +1,8 @@
 module Lib (getREPL, LangSelector(..)) where
 
-import qualified Arith.Lang as Arith(irepl, initialState, printState)
-import qualified Untyped.Lang as Untyped(irepl, initialState, printState)
-import REPL(REPL, makeREPL)
+import qualified Arith.Lang as Arith(repl)
+import qualified Untyped.Lang as Untyped(repl)
+import REPL.Lang(REPL, makeREPL)
 
 data LangSelector =
   Arith
@@ -10,5 +10,5 @@ data LangSelector =
   deriving (Read, Show)
 
 getREPL :: LangSelector -> REPL
-getREPL Arith = makeREPL Arith.irepl Arith.initialState Arith.printState
-getREPL Untyped = makeREPL Untyped.irepl Untyped.initialState Untyped.printState
+getREPL Arith = Arith.repl
+getREPL Untyped = Untyped.repl
