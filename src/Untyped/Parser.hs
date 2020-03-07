@@ -8,6 +8,7 @@ import Common.Parser
 data ParseStatement =
   ParsedTerm ParseTerm
   | ParsedAssignment ParseAssignment
+  deriving Show
 
 data ParseTerm =
   ParseAbstraction String ParseTerm ParseData
@@ -15,9 +16,11 @@ data ParseTerm =
   -- | ParseApplication ParseTerm ParseTerm ParseData
   | ParseApplication ParseTerm ParseTerm
   | ParseVariable String ParseData
+  deriving Show
 
 data ParseAssignment =
   ParseAssignment String ParseTerm ParseData
+  deriving Show
 
 parseStatement :: String -> Either ParseError ParseStatement
 parseStatement input = parse statement input input

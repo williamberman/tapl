@@ -25,6 +25,7 @@ data Environment =
     { globals :: VariableIndices
     , locals  :: VariableIndices
     }
+    deriving Show
 
 makeEnvironment :: Environment
 makeEnvironment = Environment {globals = Map.empty, locals = Map.empty}

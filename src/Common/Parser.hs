@@ -8,11 +8,13 @@ data ParseData = ParseData {
   start :: Position,
   end :: Position
 }
+  deriving Show
 
 data Position = Position {
   row :: Int
   , col :: Int
 }
+  deriving Show
 
 addParseData :: GenParser Char st (ParseData -> a) -> GenParser Char st a
 addParseData parser = do
