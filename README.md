@@ -1,4 +1,4 @@
-A set of programming languages from https://en.wikipedia.org/wiki/Types_and_Programming_Languages implemented in haskell.
+A set of programming languages from https://en.wikipedia.org/wiki/Types_and_Programming_Languages.
 
 Requires stack, https://docs.haskellstack.org/en/stable/README/.
 
