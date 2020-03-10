@@ -32,17 +32,17 @@ data REPL = REPL
   , env :: String
   }
 
-makeREPL :: Show s => InternalREPL i s -> s -> (s -> String) -> REPL
-makeREPL irepl state printState = REPL
-  { readEvalPrint = makeReadEvalPrint irepl state printState
-  , env = printState state
+makeREPL :: Show s => InternalREPL i s -> s -> REPL
+makeREPL irepl state = REPL
+  { readEvalPrint = makeReadEvalPrint irepl state
+  , env = show state
   }
 
-makeReadEvalPrint :: Show s => InternalREPL i s -> s -> (s -> String) -> String -> Either String (String, REPL)
-makeReadEvalPrint irepl state printState input =
+makeReadEvalPrint :: Show s => InternalREPL i s -> s -> String -> Either String (String, REPL)
+makeReadEvalPrint irepl state input =
   case REPL.Lang.read irepl input of
     Left err -> Left err
     Right iRep ->
       case eval irepl state iRep of
         Left err -> Left err
-        Right (out, state') -> Right (out, makeREPL irepl state' printState)
+        Right (out, state') -> Right (out, makeREPL irepl state')

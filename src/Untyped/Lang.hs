@@ -4,14 +4,13 @@ import Untyped.Parser(parseStatement, ParseStatement(..), ParseAssignment(..))
 import Untyped.Syntax(applyIndices, Term(..))
 import qualified Untyped.Semantics as Semantics(eval)
 import Untyped.Syntax0(parseTermToTerm0, parseStatementToStatement0, Statement0(..), Assignment0(..), Term0)
-import Untyped.State(State, initialState, makeState, setForm, printState)
-import qualified Untyped.State(printState)
+import Untyped.State(State, initialState, makeState, setForm)
 import REPL.Lang(makeInternalREPL, InternalREPL, makeREPL)
 import Text.ParserCombinators.Parsec(ParseError)
 
 import Common.Semantics
 
-repl = makeREPL irepl initialState printState
+repl = makeREPL irepl initialState
 
 irepl :: InternalREPL Statement0 (State Term0)
 irepl = makeInternalREPL parseStatement' eval Untyped.Lang.print

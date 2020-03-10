@@ -5,7 +5,7 @@ import Arith.Parser(parseLine)
 import Arith.Syntax(Term)
 import qualified Arith.Semantics as Semantics(eval)
 
-repl = makeREPL irepl initialState printState
+repl = makeREPL irepl initialState
 
 irepl :: InternalREPL Term ()
 irepl = makeInternalREPL parseLine eval Arith.Lang.print
@@ -19,6 +19,3 @@ initialState = ()
 
 print :: Term -> String
 print = show
-
-printState :: () -> String
-printState = show
