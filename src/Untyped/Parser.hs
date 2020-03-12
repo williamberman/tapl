@@ -8,6 +8,7 @@ import Common.Parser
 data ParseStatement =
   ParsedTerm ParseTerm
   | ParsedAssignment ParseAssignment
+  | ParsedNop
   deriving Show
 
 data ParseTerm =
@@ -23,7 +24,10 @@ data ParseAssignment =
   deriving Show
 
 parseStatement :: String -> Either ParseError ParseStatement
-parseStatement input = parse statement input input
+parseStatement input = parse topLevel input input
+
+topLevel :: GenParser Char st ParseStatement
+topLevel = try statement <|> nop
 
 statement :: GenParser Char st ParseStatement
 statement = do
@@ -31,7 +35,10 @@ statement = do
   parsed <- try statementAssignment <|> statementTerm
   string ";"
   optional spaces
+  eof
   return parsed
+
+nop = do { optional spaces; optional eol; eof; return ParsedNop }
 
 statementAssignment :: GenParser Char st ParseStatement
 statementAssignment = ParsedAssignment <$> assignment

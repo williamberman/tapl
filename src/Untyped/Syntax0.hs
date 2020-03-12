@@ -7,6 +7,7 @@ import Untyped.Parser (ParseTerm(..), ParseAssignment(..), ParseStatement(..))
 data Statement0 =
   StatementTerm Term0
   | StatementAssignment Assignment0
+  | StatementNop
   deriving Show
 
 data Term0 =
@@ -27,6 +28,7 @@ data Assignment0 =
 parseStatementToStatement0 :: ParseStatement -> Statement0
 parseStatementToStatement0 (ParsedTerm term) = StatementTerm $ parseTermToTerm0 term
 parseStatementToStatement0 (ParsedAssignment assign) = StatementAssignment $ parseAssignmentToAssignment0 assign
+parseStatementToStatement0 ParsedNop = StatementNop
 
 parseTermToTerm0 :: ParseTerm -> Term0
 parseTermToTerm0 (ParseAbstraction name term _) = Abstraction0 name $ parseTermToTerm0 term

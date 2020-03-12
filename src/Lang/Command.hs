@@ -1,4 +1,4 @@
-module REPL.Command (parseCommand, Command(..)) where
+module Lang.Command (parseCommand, Command(..)) where
 
 import Text.ParserCombinators.Parsec
 

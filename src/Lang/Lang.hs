@@ -1,18 +1,18 @@
-module REPL.Lang (makeInternalREPL, makeREPL, readEvalPrint, REPL, InternalREPL, env) where
+module Lang.Lang (makeInternalLang, makeLang, Lang, InternalLang, env, readEvalPrint) where
 
 type Reader internalRep = String -> Either String internalRep
 type Evaluator internalRep state = state -> internalRep -> Either String (String, state)
 
-data InternalREPL internalRep state = InternalREPL
+data InternalLang internalRep state = InternalLang
   { read :: Reader internalRep
   , eval :: Evaluator internalRep state
   , print :: internalRep -> String
   }
 
-makeInternalREPL parser ievaluator printer = InternalREPL
-  { REPL.Lang.read = makeReader parser
+makeInternalLang parser ievaluator printer = InternalLang
+  { Lang.Lang.read = makeReader parser
   , eval = makeEvaluator ievaluator
-  , REPL.Lang.print = printer
+  , Lang.Lang.print = printer
   }
 
 makeReader :: Show err => (String -> Either err internalRep) -> Reader internalRep
@@ -27,22 +27,22 @@ makeEvaluator ievaluator state irep =
     Left err -> Left $ show err
     Right (out, state) -> Right (show out, state)
 
-data REPL = REPL
-  { readEvalPrint :: String -> Either String (String, REPL)
+data Lang = Lang
+  { readEvalPrint :: String -> Either String (String, Lang)
   , env :: String
   }
 
-makeREPL :: Show s => InternalREPL i s -> s -> REPL
-makeREPL irepl state = REPL
+makeLang :: Show s => InternalLang i s -> s -> Lang
+makeLang irepl state = Lang
   { readEvalPrint = makeReadEvalPrint irepl state
   , env = show state
   }
 
-makeReadEvalPrint :: Show s => InternalREPL i s -> s -> String -> Either String (String, REPL)
+makeReadEvalPrint :: Show s => InternalLang i s -> s -> String -> Either String (String, Lang)
 makeReadEvalPrint irepl state input =
-  case REPL.Lang.read irepl input of
+  case Lang.Lang.read irepl input of
     Left err -> Left err
     Right iRep ->
       case eval irepl state iRep of
         Left err -> Left err
-        Right (out, state') -> Right (out, makeREPL irepl state')
+        Right (out, state') -> Right (out, makeLang irepl state')

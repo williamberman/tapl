@@ -1,14 +1,14 @@
 module Arith.Lang (repl) where
 
-import REPL.Lang(makeInternalREPL, InternalREPL, makeREPL)
+import Lang.Lang(makeInternalLang, InternalLang, makeLang)
 import Arith.Parser(parseLine)
 import Arith.Syntax(Term)
 import qualified Arith.Semantics as Semantics(eval)
 
-repl = makeREPL irepl initialState
+repl = makeLang irepl initialState
 
-irepl :: InternalREPL Term ()
-irepl = makeInternalREPL parseLine eval Arith.Lang.print
+irepl :: InternalLang Term ()
+irepl = makeInternalLang parseLine eval Arith.Lang.print
 
 eval _ term =
   case Semantics.eval term of

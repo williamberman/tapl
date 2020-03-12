@@ -1,14 +1,14 @@
-module Lib (getREPL, LangSelector(..)) where
+module Lib (getLang, LangSelector(..)) where
 
 import qualified Arith.Lang as Arith(repl)
 import qualified Untyped.Lang as Untyped(repl)
-import REPL.Lang(REPL, makeREPL)
+import Lang.Lang(Lang)
 
 data LangSelector =
   Arith
   | Untyped
   deriving (Read, Show)
 
-getREPL :: LangSelector -> REPL
-getREPL Arith = Arith.repl
-getREPL Untyped = Untyped.repl
+getLang :: LangSelector -> Lang
+getLang Arith = Arith.repl
+getLang Untyped = Untyped.repl

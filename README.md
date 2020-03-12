@@ -2,7 +2,7 @@ A set of programming languages from https://en.wikipedia.org/wiki/Types_and_Prog
 
 Requires stack, https://docs.haskellstack.org/en/stable/README/.
 
-All languages are run from the same binary. Either reads source from a file or boots into a REPL.
+All languages are run from the same binary. Either reads source from a file or boots into a Lang.
 
 ## Examples
 ```
