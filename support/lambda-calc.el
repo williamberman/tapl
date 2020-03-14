@@ -27,6 +27,7 @@
   "Regular expression for Lambda Calculus variable name highlighting.")
 
 (defconst lambda-calc--font-lock-keywords
+  ;; TODO should use the lambda calc specific faces
   `((,lambda-calc--variable-name-regexp 0 font-lock-variable-name-face)
     (,lambda-calc--keyword-regexp 0 font-lock-keyword-face)))
 
