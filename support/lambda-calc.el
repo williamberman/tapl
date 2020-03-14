@@ -5,33 +5,22 @@
   :group 'languages
   :tag "Lambda Calculus")
 
-(defface lambda-calc-keyword-face
-  '((t (:inherit font-lock-keyword-face)))
-  "How to highlight Lambda Calculus keywords."
-  :group 'lambda-calc)
-
-(defface lambda-calc-variable-name-face
-  '((t (:inherit font-lock-variable-name-face)))
-  "How to highlight Lambda Calculus variable names."
-  :group 'lambda-calc)
-
-(defconst lambda-calc-keywords
+(defconst lambda-calc--keywords
   '("lambda"))
 
-(defvar lambda-calc--keyword-regexp
+(defconst lambda-calc--keyword-regexp
   (regexp-opt lambda-calc-keywords 'words)
   "Regular expression for Lambda Calculus keyword highlighting.")
 
-(defvar lambda-calc--variable-name-regexp
+(defconst lambda-calc--variable-name-regexp
   "^\\w+"
   "Regular expression for Lambda Calculus variable name highlighting.")
 
 (defconst lambda-calc--font-lock-keywords
-  ;; TODO should use the lambda calc specific faces
   `((,lambda-calc--variable-name-regexp 0 font-lock-variable-name-face)
     (,lambda-calc--keyword-regexp 0 font-lock-keyword-face)))
 
-(defvar lambda-calc-font-lock-defaults
+(defconst lambda-calc--font-lock-defaults
   `(,lambda-calc--font-lock-keywords)
   "Highlighting instructions for Lambda Calculus.")
 
