@@ -5,30 +5,32 @@
   :group 'languages
   :tag "Lambda Calculus")
 
-(defconst lambda-calc--keywords
-  '("lambda"))
+(defconst lambda-calc--keywords nil)
+(setq lambda-calc--keywords '("lambda"))
 
-(defconst lambda-calc--keyword-regexp
-  (regexp-opt lambda-calc--keywords 'words)
-  "Regular expression for Lambda Calculus keyword highlighting.")
+(defconst lambda-calc--keyword-regexp nil)
+(setq lambda-calc--keyword-regexp (regexp-opt lambda-calc--keywords 'words))
 
-(defconst lambda-calc--variable-name-regexp
-  "^\\w+"
-  "Regular expression for Lambda Calculus variable name highlighting.")
+(defconst lambda-calc--variable-name-regexp nil)
+(setq lambda-calc--variable-name-regexp  "^\\w+")
 
-(defconst lambda-calc--font-lock-keywords
-  `(("\\." 0 font-lock-builtin-face)
-    (,lambda-calc--variable-name-regexp 0 font-lock-variable-name-face)
-    (,lambda-calc--keyword-regexp 0 font-lock-keyword-face)))
+(defconst lambda-calc--abstraction-complete-regexp nil)
+(setq lambda-calc--abstraction-complete-regexp "\\.")
 
-(defconst lambda-calc--font-lock-defaults
-  `(,lambda-calc--font-lock-keywords)
-  "Highlighting instructions for Lambda Calculus.")
+;; TODO these faces should be part of this module and added to the group
+(defconst lambda-calc--font-lock-keywords nil)
+(setq lambda-calc--font-lock-keywords
+      `((,lambda-calc--abstraction-complete-regexp 0 font-lock-warning-face)
+	(,lambda-calc--variable-name-regexp 0 font-lock-variable-name-face)
+	(,lambda-calc--keyword-regexp 0 font-lock-keyword-face)))
+
+(defconst lambda-calc--font-lock-defaults nil)
+(setq lambda-calc--font-lock-defaults
+      `(,lambda-calc--font-lock-keywords))
 
 (defvar lambda-calc-syntax-table
   nil
   "Syntax table for `lambda-calc-mode'")
-
 (setq lambda-calc-syntax-table
       (let ((table (make-syntax-table)))
 	(modify-syntax-entry ?- ". 12" table)
