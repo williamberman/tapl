@@ -37,8 +37,12 @@ statement = do
   optional spaces
   eof
   return parsed
+  
+nop = try emptyLine <|> try comment
 
-nop = do { optional spaces; optional eol; eof; return ParsedNop }
+emptyLine = do { optional spaces; optional eol; eof; return ParsedNop }
+
+comment = do { string "--"; many anyChar ; optional eol ; eof; return ParsedNop }
 
 statementAssignment :: GenParser Char st ParseStatement
 statementAssignment = ParsedAssignment <$> assignment
