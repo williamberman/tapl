@@ -6,9 +6,12 @@ module Common.Parser
   , eol
   ) where
 
-import qualified Control.Monad
-import qualified Text.Parsec.Prim
-import           Text.ParserCombinators.Parsec
+import qualified Control.Monad                 (liftM, void)
+import qualified Text.Parsec.Prim              (ParsecT)
+import           Text.ParserCombinators.Parsec (GenParser, SourcePos, char,
+                                                getParserState, option,
+                                                sourceColumn, sourceLine,
+                                                statePos, (<|>))
 
 data ParseData =
   ParseData
@@ -45,4 +48,4 @@ sourcePos :: Monad m => Text.Parsec.Prim.ParsecT s u m SourcePos
 sourcePos = statePos `Control.Monad.liftM` getParserState
 
 eol :: GenParser Char state ()
-eol = (char '\n' <|> (char '\r' >> option '\n' (char '\n'))) >> return ()
+eol = Control.Monad.void $ char '\n' <|> (char '\r' >> option '\n' (char '\n'))

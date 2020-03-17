@@ -34,7 +34,7 @@ runInput lang input =
       outputStrLn "Error"
       outputStrLn err
       return lang
-    Right (out, lang') -> do
+    Right (lang', out) -> do
       outputStrLn out
       return lang'
 
@@ -60,12 +60,9 @@ loadFile lang filename = do
           outputStrLn "Error"
           outputStrLn err
           return $ Just lang
-        Right (lang', out) ->
-          case out of
-            Just out' -> do
-              outputStrLn out'
-              return $ Just lang'
-            Nothing -> return $ Just lang'
+        Right (lang', out) -> do
+          outputStrLn out
+          return $ Just lang'
 
 safeRead :: String -> IO (Either String String)
 safeRead filename = do

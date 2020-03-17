@@ -1,6 +1,6 @@
 module Untyped.Lang(repl) where
 
-import Untyped.Parser(parseStatement)
+import Untyped.Parser(parseInput)
 import Untyped.Syntax(applyIndices, Term(..), Statement(..), Assignment(..))
 import qualified Untyped.Semantics as Semantics(eval)
 import Untyped.State(State, initialState, makeState, setForm)
@@ -12,7 +12,7 @@ import Common.Semantics
 repl = makeLang irepl initialState
 
 irepl :: InternalLang Statement (State Term)
-irepl = makeInternalLang parseStatement eval Untyped.Lang.print
+irepl = makeInternalLang parseInput eval Untyped.Lang.print
 
 newtype EvalOut = EvalOut (Maybe Term)
 

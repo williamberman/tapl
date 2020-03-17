@@ -1,11 +1,33 @@
-module Untyped.Parser (parseStatement) where
+module Untyped.Parser
+  ( parseInput
+  ) where
 
-import Text.ParserCombinators.Parsec
-import Common.Parser(withParseData, ParseData, eol, addParseData)
-import Untyped.Syntax(Term(..), Variable(..), Statement(..), Assignment(..))
 
-parseStatement :: String -> Either ParseError Statement
-parseStatement input = parse topLevel input input
+import           Common.Parser                 (ParseData (..), Position (..),
+                                                addParseData, eol,
+                                                withParseData)
+import           Data.List                     (intercalate)
+import           Text.ParserCombinators.Parsec
+import           Untyped.Syntax                (Assignment (..), Statement (..),
+                                                Term (..), Variable (..))
+
+parseInput :: String -> [Either ParseError Statement]
+parseInput input =
+  if null input
+    then []
+    else case parseStatement input of
+           Left err -> Left err : parseInput (findNextStartPoint input)
+           Right (result, parseData) -> Right result : parseInput (removeUpTo parseData input)
+
+findNextStartPoint :: String -> String
+findNextStartPoint input = intercalate "\n" $ drop 1 $ lines input
+
+removeUpTo :: ParseData -> String -> String
+removeUpTo ParseData {end = Position {row = row', col = col'}} input =
+  drop (col' - 1) $ intercalate "\n" $ drop (row' - 1) $ lines input
+
+parseStatement :: String -> Either ParseError (Statement, ParseData)
+parseStatement input = parse (withParseData topLevel) input input
 
 topLevel :: GenParser Char st Statement
 topLevel = try statement <|> nop
@@ -16,14 +38,22 @@ statement = do
   parsed <- try statementAssignment <|> statementTerm
   string ";"
   optional spaces
-  eof
   return parsed
 
 nop = try emptyLine <|> try comment
 
-emptyLine = do { optional spaces; optional eol; eof; return Nop }
+emptyLine = do
+  emptyLine'
+  return Nop
 
-comment = do { string "--"; many anyChar ; optional eol ; eof; return Nop }
+emptyLine' = try eol <|> try eof <|> do { space; emptyLine' }
+
+comment = do
+  string "--"
+  comment'
+  return Nop
+
+comment' = try eol <|> try eof <|> do { anyChar; comment' }
 
 statementAssignment :: GenParser Char st Statement
 statementAssignment = StatementAssignment <$> assignment
@@ -69,12 +99,13 @@ abstraction =
     optional spaces
     char '.'
     parsedTerm <- parseTerm
-    return $ \pd -> Abstraction{parseData = pd, name = varIdent, term = parsedTerm}
+    return $ \pd -> Abstraction {parseData = pd, name = varIdent, term = parsedTerm}
 
 variable :: GenParser Char st Term
-variable = addMaybeParseData $ do
-  ident <- variableIdentifier
-  return $ \pd -> Variable{parseData = pd, var = NamedVariable{variableName = ident }}
+variable =
+  addMaybeParseData $ do
+    ident <- variableIdentifier
+    return $ \pd -> Variable {parseData = pd, var = NamedVariable {variableName = ident}}
 
 application :: GenParser Char st Term
 application =

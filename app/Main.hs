@@ -26,5 +26,4 @@ readFileWrapper lang filename = do
     Left err -> do
       putStrLn "Error"
       putStrLn err
-    Right (_, Nothing)-> return ()
-    Right (_, Just out) -> putStrLn out
+    Right (_, out) -> putStrLn out

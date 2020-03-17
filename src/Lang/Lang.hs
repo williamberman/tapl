@@ -1,7 +1,9 @@
 module Lang.Lang (makeInternalLang, makeLang, Lang, InternalLang, env, readEvalPrint) where
 
-type Reader internalRep = String -> Either String internalRep
-type Evaluator internalRep state = state -> internalRep -> Either String (String, state)
+import Data.List(intercalate)
+
+type Reader internalRep = String -> [Either String internalRep]
+type Evaluator internalRep state = state -> internalRep -> Either String (state, String)
 
 data InternalLang internalRep state = InternalLang
   { read :: Reader internalRep
@@ -15,20 +17,23 @@ makeInternalLang parser ievaluator printer = InternalLang
   , Lang.Lang.print = printer
   }
 
-makeReader :: Show err => (String -> Either err internalRep) -> Reader internalRep
+makeReader :: Show err => (String -> [Either err internalRep]) -> Reader internalRep
 makeReader parser input =
-  case parser input of
-    Left err -> Left $ show err
-    Right irep -> Right irep
+  map convertOutput $ parser input
+  where
+    convertOutput output =
+      case output of
+        Left err -> Left $ show err
+        Right irep -> Right irep
 
 makeEvaluator :: (Show err, Show out) => (state -> irep -> Either err (out, state)) -> Evaluator irep state
 makeEvaluator ievaluator state irep =
   case ievaluator state irep of
     Left err -> Left $ show err
-    Right (out, state) -> Right (show out, state)
+    Right (out, state) -> Right (state, show out)
 
 data Lang = Lang
-  { readEvalPrint :: String -> Either String (String, Lang)
+  { readEvalPrint :: String -> Either String (Lang, String)
   , env :: String
   }
 
@@ -38,11 +43,27 @@ makeLang irepl state = Lang
   , env = show state
   }
 
-makeReadEvalPrint :: Show s => InternalLang i s -> s -> String -> Either String (String, Lang)
+makeReadEvalPrint :: Show s => InternalLang i s -> s -> String -> Either String (Lang, String)
 makeReadEvalPrint irepl state input =
-  case Lang.Lang.read irepl input of
-    Left err -> Left err
-    Right iRep ->
-      case eval irepl state iRep of
+  case read' (Lang.Lang.read irepl) input of
+    Left errors -> Left $ intercalate "\n" errors
+    Right parsedResults ->
+      case eval' (eval irepl) state parsedResults of
         Left err -> Left err
-        Right (out, state') -> Right (out, makeLang irepl state')
+        Right (state', out) -> Right (makeLang irepl state', out)
+
+read' :: Reader i -> String -> Either [String] [i]
+read' reader input =
+  foldl reducer (Right []) $ reader input
+  where
+    reducer :: Either [String] [i] -> Either String i -> Either [String] [i]
+    reducer (Right parseResults) (Right parseResult) = Right $ parseResults ++ [parseResult]
+    reducer (Right parseResults) (Left error) = Left [error]
+    reducer (Left errors) (Right parseResult) = Left errors
+    reducer (Left errors) (Left error) = Left $ errors ++ [error]
+
+eval' :: Evaluator i s -> s -> [i] -> Either String (s, String)
+eval' evaluator state = foldl reducer $ Right (state, "")
+  where
+    reducer (Right (state', _)) parsed = evaluator state' parsed
+    reducer (Left err) _ = Left err

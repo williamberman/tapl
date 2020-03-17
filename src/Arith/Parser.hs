@@ -13,8 +13,8 @@ class ParseTerm a where
   makeIsZero :: a -> ParseData -> a
   intToTerm :: Int -> ParseData -> a
 
-parseLine :: ParseTerm a => String -> Either ParseError a
-parseLine = parse line "(unknown)"
+parseLine :: ParseTerm a => String -> [Either ParseError a]
+parseLine input = [parse line input input]
 
 line :: ParseTerm a => GenParser Char st a
 line = do

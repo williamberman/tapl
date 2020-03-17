@@ -8,7 +8,10 @@ import Common.Semantics
 data Out =
   OutB Bool
   | OutI Int
-  deriving Show
+
+instance Show Out where
+  show (OutB b) = show b
+  show (OutI i) = show i
 
 eval :: Term -> Either (EvalError Term) Out
 eval term = case eval1 term of
