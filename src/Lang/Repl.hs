@@ -7,9 +7,9 @@ import qualified Lang.File                as File (readFile)
 import           Lang.Lang                (Lang, env, readEvalPrint)
 import           System.Console.Haskeline
 
+import           Control.Exception        (try)
 import           Control.Monad.IO.Class   (liftIO)
 import qualified Data.Foldable
-import Control.Exception(try)
 
 prompt = "> "
 
@@ -71,5 +71,5 @@ safeRead :: String -> IO (Either String String)
 safeRead filename = do
   readRes <- try $ readFile filename
   case readRes of
-    Left err -> return $ Left $ show (err :: IOException)
+    Left err       -> return $ Left $ show (err :: IOException)
     Right contents -> return $ Right contents

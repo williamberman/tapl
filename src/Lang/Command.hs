@@ -1,9 +1,13 @@
-module Lang.Command (parseCommand, Command(..)) where
+module Lang.Command
+  ( parseCommand
+  , Command(..)
+  ) where
 
-import Text.ParserCombinators.Parsec
+import           Common.Utils                  (trim)
+import           Text.ParserCombinators.Parsec
 
-data Command =
-  Quit
+data Command
+  = Quit
   | Env
   | LoadFile String
 
@@ -19,14 +23,18 @@ command = do
   return command'
 
 quit :: GenParser Char st Command
-quit = do { string "quit" ; return Quit }
+quit = do
+  string "quit"
+  return Quit
 
 env :: GenParser Char st Command
-env = do { string "env" ; return Env }
+env = do
+  string "env"
+  return Env
 
 loadFile :: GenParser Char st Command
 loadFile = do
   string "load"
   spaces
   filename <- many1 anyChar
-  return $ LoadFile filename
+  return $ LoadFile $ trim filename
