@@ -9,6 +9,7 @@ import           System.Console.Haskeline
 
 import           Control.Monad.IO.Class   (liftIO)
 import qualified Data.Foldable
+import Control.Exception(try)
 
 prompt = "> "
 
@@ -48,15 +49,27 @@ runCommand lang cmd =
 
 loadFile :: Lang -> String -> InputT IO (Maybe Lang)
 loadFile lang filename = do
-  contents <- liftIO $ readFile filename
-  case File.readFile lang contents of
+  readRes <- liftIO $ safeRead filename
+  case readRes of
     Left err -> do
-      outputStrLn "Error"
       outputStrLn err
       return $ Just lang
-    Right (lang', out) ->
-      case out of
-        Just out' -> do
-          outputStrLn out'
-          return $ Just lang'
-        Nothing -> return $ Just lang'
+    Right contents ->
+      case File.readFile lang contents of
+        Left err -> do
+          outputStrLn "Error"
+          outputStrLn err
+          return $ Just lang
+        Right (lang', out) ->
+          case out of
+            Just out' -> do
+              outputStrLn out'
+              return $ Just lang'
+            Nothing -> return $ Just lang'
+
+safeRead :: String -> IO (Either String String)
+safeRead filename = do
+  readRes <- try $ readFile filename
+  case readRes of
+    Left err -> return $ Left $ show (err :: IOException)
+    Right contents -> return $ Right contents
