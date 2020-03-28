@@ -1,15 +1,15 @@
 module Lang.Lang (makeInternalLang, makeLang, Lang, InternalLang, env, readEvalPrint) where
 
-import Data.List(intercalate)
+import           Data.List (intercalate)
 
 type Reader internalRep = String -> [Either String internalRep]
 type Evaluator internalRep state = state -> internalRep -> Either String (state, String)
 
 data InternalLang internalRep state = InternalLang
-  { read :: Reader internalRep
-  , eval :: Evaluator internalRep state
-  , print :: internalRep -> String
-  }
+    { read  :: Reader internalRep
+    , eval  :: Evaluator internalRep state
+    , print :: internalRep -> String
+    }
 
 makeInternalLang parser ievaluator printer = InternalLang
   { Lang.Lang.read = makeReader parser
@@ -23,19 +23,19 @@ makeReader parser input =
   where
     convertOutput output =
       case output of
-        Left err -> Left $ show err
+        Left err   -> Left $ show err
         Right irep -> Right irep
 
 makeEvaluator :: (Show err, Show out) => (state -> irep -> Either err (out, state)) -> Evaluator irep state
 makeEvaluator ievaluator state irep =
   case ievaluator state irep of
-    Left err -> Left $ show err
+    Left err           -> Left $ show err
     Right (out, state) -> Right (state, show out)
 
 data Lang = Lang
-  { readEvalPrint :: String -> Either String (Lang, String)
-  , env :: String
-  }
+    { readEvalPrint :: String -> Either String (Lang, String)
+    , env           :: String
+    }
 
 makeLang :: Show s => InternalLang i s -> s -> Lang
 makeLang irepl state = Lang
@@ -49,7 +49,7 @@ makeReadEvalPrint irepl state input =
     Left errors -> Left $ intercalate "\n" errors
     Right parsedResults ->
       case eval' (eval irepl) state parsedResults of
-        Left err -> Left err
+        Left err            -> Left err
         Right (state', out) -> Right (makeLang irepl state', out)
 
 read' :: Reader i -> String -> Either [String] [i]
@@ -66,4 +66,4 @@ eval' :: Evaluator i s -> s -> [i] -> Either String (s, String)
 eval' evaluator state = foldl reducer $ Right (state, "")
   where
     reducer (Right (state', _)) parsed = evaluator state' parsed
-    reducer (Left err) _ = Left err
+    reducer (Left err) _               = Left err

@@ -1,13 +1,16 @@
 module Untyped.Lang(repl) where
 
-import Untyped.Parser(parseInput)
-import Untyped.Syntax(applyIndices, Term(..), Statement(..), Assignment(..))
-import qualified Untyped.Semantics as Semantics(eval)
-import Untyped.State(State, initialState, makeState, setForm)
-import Lang.Lang(makeInternalLang, InternalLang, makeLang)
-import Text.ParserCombinators.Parsec(ParseError)
+import           Lang.Lang                     (InternalLang, makeInternalLang,
+                                                makeLang)
+import           Text.ParserCombinators.Parsec (ParseError)
+import           Untyped.Parser                (parseInput)
+import qualified Untyped.Semantics             as Semantics (eval)
+import           Untyped.State                 (State, initialState, makeState,
+                                                setForm)
+import           Untyped.Syntax                (Assignment (..), Statement (..),
+                                                Term (..), applyIndices)
 
-import Common.Semantics
+import           Common.Semantics
 
 repl = makeLang irepl initialState
 
@@ -17,13 +20,13 @@ irepl = makeInternalLang parseInput eval Untyped.Lang.print
 newtype EvalOut = EvalOut (Maybe Term)
 
 instance Show EvalOut where
-  show (EvalOut Nothing) = ""
+  show (EvalOut Nothing)  = ""
   show (EvalOut (Just t)) = show t
 
 eval :: State Term -> Statement -> Either (EvalError Term) (EvalOut, State Term)
 eval state (StatementTerm term) =
   case Semantics.eval term' of
-    Left error -> Left error
+    Left error   -> Left error
     Right term'' -> Right (EvalOut $ Just term'', makeState env state)
   where
     (term', env) = applyIndices term

@@ -1,16 +1,15 @@
 module Arith.Syntax (Term(..), isNumeric, isVal) where
 
-import Arith.Parser(ParseTerm(..), ParseData)
+import           Arith.Parser (ParseData, ParseTerm (..))
 
-data Term =
-  TTrue
-  | TFalse
-  | If Term Term Term
-  | Zero
-  | Succ Term
-  | Pred Term
-  | IsZero Term
-  deriving Show
+data Term = TTrue
+    | TFalse
+    | If Term Term Term
+    | Zero
+    | Succ Term
+    | Pred Term
+    | IsZero Term
+    deriving Show
 
 instance ParseTerm Term where
   makeTrue _ = TTrue
@@ -29,17 +28,17 @@ instance ParseTerm Term where
 
 isNumeric :: Term -> Bool
 
-isNumeric Zero = True
+isNumeric Zero        = True
 isNumeric (Succ term) = isNumeric term
 isNumeric (Pred term) = isNumeric term
-isNumeric _ = False
+isNumeric _           = False
 
 
 isVal :: Term -> Bool
 
-isVal TTrue = True
+isVal TTrue  = True
 isVal TFalse = False
-isVal term = isNumeric term
+isVal term   = isNumeric term
 
 data AugTerm = AugTerm Term ParseData
 

@@ -6,10 +6,9 @@ module Lang.Command
 import           Common.Utils                  (trim)
 import           Text.ParserCombinators.Parsec
 
-data Command
-  = Quit
-  | Env
-  | LoadFile String
+data Command = Quit
+    | Env
+    | LoadFile String
 
 parseCommand :: String -> Either ParseError Command
 parseCommand input = parse command input input

@@ -1,13 +1,12 @@
 module Arith.Semantics (eval) where
 
-import Arith.Syntax(Term(..), isNumeric)
-import Common.Semantics
+import           Arith.Syntax     (Term (..), isNumeric)
+import           Common.Semantics
 
 ----- eval -----
 
-data Out =
-  OutB Bool
-  | OutI Int
+data Out = OutB Bool
+    | OutI Int
 
 instance Show Out where
   show (OutB b) = show b
@@ -15,9 +14,9 @@ instance Show Out where
 
 eval :: Term -> Either (EvalError Term) Out
 eval term = case eval1 term of
-  Error err -> Left err
+  Error err     -> Left err
   Continue next -> eval next
-  Stop term' -> convertToOutput term'
+  Stop term'    -> convertToOutput term'
 
 ----- eval1 -----
 

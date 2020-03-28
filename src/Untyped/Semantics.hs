@@ -1,14 +1,15 @@
 module Untyped.Semantics (eval) where
 
-import Untyped.Syntax(Term(..), makeReplacement, substitute, shift)
-import Common.Semantics
+import           Common.Semantics
+import           Untyped.Syntax   (Term (..), makeReplacement, shift,
+                                   substitute)
 
 eval :: Term -> Either (EvalError Term) Term
 
 eval term = case eval1 term of
-  Error err -> Left err
+  Error err     -> Left err
   Continue next -> eval next
-  Stop term' -> Right term'
+  Stop term'    -> Right term'
 
 eval1 :: Term -> EvalStepResult Term
 eval1 = stopIfSame eval1'

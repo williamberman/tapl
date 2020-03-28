@@ -14,15 +14,14 @@ module Untyped.State
   ) where
 
 import qualified Common.Utils    as Utils
+import           Data.List
 import qualified Data.Map.Strict as Map
-import Data.List
 
 type DBIndex = Integer
 
 type VariableIndices = Map.Map String DBIndex
 
-data Environment =
-  Environment
+data Environment = Environment
     { globals :: VariableIndices
     , locals  :: VariableIndices
     }
@@ -31,8 +30,7 @@ data Environment =
 makeEnvironment :: Environment
 makeEnvironment = Environment {globals = Map.empty, locals = Map.empty}
 
-data LookUpResult =
-  LookUpResult
+data LookUpResult = LookUpResult
     { global :: Maybe DBIndex
     , local  :: Maybe DBIndex
     }
@@ -68,7 +66,7 @@ instance Show f => Show (State f) where
     intercalate "\n" $ map printAState $ Map.toList state
     where
       printAState :: Show f => (String, (DBIndex, Maybe f)) -> String
-      printAState (name, (_, Nothing)) = name <> " is undefined"
+      printAState (name, (_, Nothing))   = name <> " is undefined"
       printAState (name, (_, Just form)) = name <> " = " <> show form
 
 makeState :: Environment -> State f -> State f
@@ -77,7 +75,7 @@ makeState Environment {globals = globals'} (State state) =
   where
     getForm name =
       case Map.lookup name state of
-        Nothing -> Nothing
+        Nothing        -> Nothing
         Just (_, form) -> form
 
 initialState :: State f

@@ -1,14 +1,15 @@
 module Cli (opts, Args(..)) where
 
-import Lib (LangSelector(..))
+import           Lib                 (LangSelector (..))
 
-import Data.Semigroup ((<>))
-import Options.Applicative
+import           Data.Semigroup      ((<>))
+import           Options.Applicative
 
 data Args = Args
-  { lang :: LangSelector
-  , file :: Maybe String
-  } deriving Show
+    { lang :: LangSelector
+    , file :: Maybe String
+    }
+    deriving Show
 
 opts = info (sample <**> helper)
      ( fullDesc
