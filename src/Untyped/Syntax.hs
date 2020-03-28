@@ -12,41 +12,37 @@ module Untyped.Syntax
 import           Common.Parser (ParseData)
 import           Untyped.State
 
-data Statement =
-  StatementTerm Term
-  | StatementAssignment Assignment
-  | Nop
-  deriving Show
+data Statement = StatementTerm Term
+    | StatementAssignment Assignment
+    | Nop
+    deriving Show
 
-data Assignment =
-  Assignment String Term ParseData
-  deriving Show
+data Assignment = Assignment String Term ParseData
+    deriving Show
 
-data Term
-  = Abstraction
-      { term      :: Term
-      , name      :: String
-      , parseData :: Maybe ParseData
-      }
-  | Application
-      { t1        :: Term
-      , t2        :: Term
-      , parseData :: Maybe ParseData
-      }
-  | Variable
-      { var       :: Variable
-      , parseData :: Maybe ParseData
-      }
+data Term = Abstraction
+    { term      :: Term
+    , name      :: String
+    , parseData :: Maybe ParseData
+    }
+    | Application
+    { t1        :: Term
+    , t2        :: Term
+    , parseData :: Maybe ParseData
+    }
+    | Variable
+    { var       :: Variable
+    , parseData :: Maybe ParseData
+    }
 
 -- TODO Is there a better way to do this?
-data Variable
-  = NamedVariable
-      { variableName :: String
-      }
-  | NamelessVariable
-      { idx          :: DBIndex
-      , variableName :: String
-      }
+data Variable = NamedVariable
+    { variableName :: String
+    }
+    | NamelessVariable
+    { idx          :: DBIndex
+    , variableName :: String
+    }
 
 getIdx :: Variable -> DBIndex
 getIdx NamelessVariable {idx = idx'} = idx'
@@ -104,8 +100,7 @@ applyIndices' env Abstraction {name = name', term = term', parseData = parseData
     env'' = removeLocal name' env'
 
 -- substitute
-data Replacement =
-  Replacement DBIndex Term
+data Replacement = Replacement DBIndex Term
 
 makeReplacement :: DBIndex -> Term -> Replacement
 makeReplacement = Replacement

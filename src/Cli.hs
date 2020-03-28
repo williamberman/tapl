@@ -1,9 +1,9 @@
 module Cli (opts, Args(..)) where
 
-import Lib(LangSelector(..))
+import Lib (LangSelector(..))
 
-import Options.Applicative
 import Data.Semigroup ((<>))
+import Options.Applicative
 
 data Args = Args
   { lang :: LangSelector

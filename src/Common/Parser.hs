@@ -13,19 +13,17 @@ import           Text.ParserCombinators.Parsec (GenParser, SourcePos, char,
                                                 sourceColumn, sourceLine,
                                                 statePos, (<|>))
 
-data ParseData =
-  ParseData
+data ParseData = ParseData
     { start :: Position
     , end   :: Position
     }
-  deriving (Show)
+    deriving (Show)
 
-data Position =
-  Position
+data Position = Position
     { row :: Int
     , col :: Int
     }
-  deriving (Show)
+    deriving (Show)
 
 addParseData :: GenParser Char st (ParseData -> a) -> GenParser Char st a
 addParseData parser = do

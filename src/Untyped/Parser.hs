@@ -2,7 +2,6 @@ module Untyped.Parser
   ( parseInput
   ) where
 
-
 import           Common.Parser                 (ParseData (..), Position (..),
                                                 addParseData, eol,
                                                 withParseData)

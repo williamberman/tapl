@@ -1,7 +1,7 @@
 module Arith.Parser (parseLine, ParseTerm(..), ParseData) where
 
-import Text.ParserCombinators.Parsec
-import Common.Parser
+import           Common.Parser
+import           Text.ParserCombinators.Parsec
 
 class ParseTerm a where
   makeTrue :: ParseData -> a
