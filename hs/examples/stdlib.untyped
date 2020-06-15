@@ -7,7 +7,7 @@ or = lambda a. lambda b. a tru b;
 not = lambda a. a fls tru;
 
 -- Pairs
-pair = lambda f. lambda s. p fs;
+pair = lambda f. lambda s. lambda choose. choose f s;
 fst = lambda p. p tru;
 snd = lambda p. p fls;
 
@@ -16,7 +16,7 @@ c0 = lambda s. lambda z. s z;
 c1 = scc c0;
 c2 = scc c1;
 c3 = scc c2;
-scc = lambda n. lambda s. lambda z s (n s z);
+scc = lambda n. lambda s. lambda m s (n s z);
 prd = lambda m. fst (m (lambda p. pair (snd p) (plus c1 (snd p))) (pair c0 c0));
 iszro = lambda n. n (lambda _. fls) tru;
 areEqual = lambda n. lambda m. and (iszro (sub n m)) (iszro (sub m n));
@@ -29,7 +29,7 @@ pow = lambda m. lambda n. m n;
 cons = lambda h. lambda t. lambda c. lambda n. c h (t c n);
 nil = lambda c. lambda n. n;
 isnil = lambda l. l (lambda _. lambda _. fls) tru;
-head = lambda l. (lambda h. lambda _. h) fls;
+head = lambda l. l (lambda h. lambda _. h) fls;
 tail = lambda l. fst (l (lambda h. lambda p. pair (snd p) (cons h (snd p))) (pair nil nil));
 
 -- Recursion combinators
