@@ -2,31 +2,44 @@
 
 (provide (all-defined-out))
 
-;; Church booleans
-(define true (lambda t (lambda f t)))
+(require "untyped-stdlib-support.rkt")
 
-(define false (lambda t (lambda f f)))
+;; Church booleans
+(define true (lambda tru (lambda fls tru)))
+(: true 'boolean)
+
+(define false (lambda tru (lambda fls fls)))
+(: false 'boolean)
 
 (define if (lambda predicate (lambda consequent (lambda alternative
                                                   ((predicate consequent) alternative)))))
+(: if 'boolean 'any 'any)
 
 (define and (lambda a (lambda b
                         ((a b) false))))
+(: and 'boolean 'boolean 'boolean)
 
 (define or (lambda a (lambda b
                        ((a true) b))))
+(: or 'boolean 'boolean 'boolean)
 
-(define not (lambda a (a false true)))
+(define not (lambda a ((a false) true)))
+(: not 'boolean 'boolean)
 
+(interpret-as! 'boolean (proc (boolean) ((boolean #t) #f)))
 
 ;; Pairs
 (define pair (lambda fst (lambda snd (lambda choose
                                        (choose fst snd)))))
+(: pair 'any 'any 'pair)
 
 (define first (lambda the-pair (the-pair true)))
+(: first 'pair 'any)
 
 (define second (lambda the-pair (the-pair false)))
+(: second 'pair 'any)
 
+(interpret-as! 'pair (proc (pair) (list (first pair) (second pair))))
 
 ;; Church Numerals
 (define c0 (lambda scc (lambda zro zro)))
