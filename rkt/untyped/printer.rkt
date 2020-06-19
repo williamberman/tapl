@@ -3,7 +3,8 @@
 (provide register-printer!
          printer
          set-print-mode!
-         print-mode?)
+         print-mode?
+         print-with)
 
 (require "core.rkt")
 
@@ -21,6 +22,9 @@
   ((hash-ref *printers* *print-mode*) lambda-abstraction))
 
 (define (print-mode?) *print-mode*)
+
+(define (print-with printer-key lambda-abstraction)
+  ((hash-ref *printers* printer-key) lambda-abstraction))
 
 (register-printer! 'debug (lambda (lambda-abstraction) lambda-abstraction))
 (register-printer! 'lambda-terms print-lambda-abstraction)

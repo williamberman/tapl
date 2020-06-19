@@ -2,10 +2,17 @@
 
 (provide set-print-mode!
          print-mode?
-         (rename-out [make-lambda-abstraction lambda])
+         (rename-out [make-lambda-abstraction lambda]
+                     [top-interaction #%top-interaction])
 
          (except-out (all-from-out racket/base)
-                     lambda))
+                     lambda
+                     #%top-interaction))
 
 (require "core.rkt"
-         "printer.rkt")
+         "printer.rkt"
+         "top-interaction.rkt")
+
+
+
+
