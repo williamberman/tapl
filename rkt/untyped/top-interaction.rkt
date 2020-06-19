@@ -3,7 +3,7 @@
 (provide top-interaction)
 
 (require "printer.rkt"
-         "translations.rkt")
+         "translation.rkt")
 
 (register-printer! 'pretty
                    (lambda (term)
@@ -14,4 +14,6 @@
 (set-print-mode! 'pretty)
 
 (define-syntax-rule (top-interaction . form)
-  (printer form))
+  form
+  ;; (printer form)
+  )

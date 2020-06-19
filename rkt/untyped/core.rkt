@@ -5,7 +5,8 @@
 (provide (rename-out [lambda-abstraction-stx make-lambda-abstraction])
          lambda-abstraction-binding
          lambda-abstraction-body
-         print-lambda-abstraction)
+         print-lambda-abstraction
+         lambda-abstraction?)
 
 (define-syntax (lambda-abstraction-stx stx)
   (syntax-parse stx

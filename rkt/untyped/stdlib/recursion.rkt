@@ -1,4 +1,4 @@
-#lang s-exp "lang.rkt"
+#lang s-exp "../lang.rkt"
 
 (provide fix
          Y

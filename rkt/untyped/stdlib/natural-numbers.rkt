@@ -1,4 +1,4 @@
-#lang s-exp "lang.rkt"
+#lang s-exp "../lang.rkt"
 
 (provide c0
          c1
@@ -6,7 +6,7 @@
          c3
          succ
          pred
-         and
+         add
          subtract
          multiply
          power
