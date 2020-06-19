@@ -3,8 +3,7 @@
 (require [for-syntax syntax/parse racket/base]
          racket/contract)
 
-(provide (rename-out [lambda-abstraction lambda]
-                     ;; [lambda-calculus-define define]
+(provide (rename-out [lambda-abstraction lambda]                     
                      [#%lambda-calculus-top-interaction #%top-interaction]
                      [#%lambda-calculus-app #%app]
                      [lambda proc])
@@ -16,9 +15,10 @@
          type-of
          (except-out (all-from-out racket/base)
                      lambda
-                     ;; define
                      #%top-interaction
                      #%app))
+
+;; TODO when printing with lambda-terms, we should perform the actual substitution of the bindings
 
 ;; Print modes
 ;; 1) 'debug - Print the underlying racket data type
@@ -57,17 +57,8 @@
 (define (print-mode?) *print-mode*)
 
 (define *lambda-calculus-interpretation* (make-weak-hash))
-(define *lambda-calculus-readable-converter* (make-weak-hash))
-
-;; (define-syntax (lambda-calculus-define stx)
-;;   (syntax-parse stx
-;;     [(_ variable:id body:expr)
-;;      (syntax
-;;       ;; begin0 gives - define: not allowed in an expression context
-;;       (begin
-;;         (define variable body)
-;;         (hash-set! *lambda-calculus-interpretation* variable 'body)
-;;         variable))]))
+(define *lambda-calculus-binding-names* (make-weak-hash))
+(define *lambda-calculus-readable-converter* (make-hash))
 
 (define-syntax (lambda-abstraction stx)
   (syntax-parse stx
@@ -77,8 +68,17 @@
                       body)])
         (hash-set! *lambda-calculus-interpretation*
                    result
-                   '(lambda (variable) body))
-        result))]))
+                   '(lambda variable body))
+
+        (hash-set *lambda-calculus-binding-names*
+                  result
+                  'variable)
+        
+        result))]
+    [(_ (variable:id ...) body:expr)
+     (syntax
+      (lambda (variable ...)
+        body))]))
 
 (define *lambda-calculus-types* (make-weak-hash))
 
@@ -92,21 +92,34 @@
   (-> any/c procedure? void?)
   (hash-set! *lambda-calculus-readable-converter* (list type) converter))
 
+(define *lambda-calculus-bindings* (make-weak-hash))
+
+(define (try-apply-type result prev-proc)
+  (when (and (hash-has-key? *lambda-calculus-types* prev-proc)
+             (list? (hash-ref *lambda-calculus-types* prev-proc)))
+    
+    (define type (safe-tail (hash-ref *lambda-calculus-types* prev-proc)))
+    
+    (when (or (not (hash-has-key? *lambda-calculus-types* result))
+              (equal? (hash-ref *lambda-calculus-types* result)
+                      type))
+      (apply : (cons result type)))))
+
+(define (try-apply-binding result prev-proc arg)
+  (define bindings
+    (hash-ref *lambda-calculus-bindings* prev-proc (make-immutable-hash)))
+  (define next-bindings
+    (hash-set bindings (hash-ref *lambda-calculus-binding-names* result) arg))
+  (hash-set *lambda-calculus-bindings* result next-bindings))
+
 ;; create the lambda-calculus-interpretation of the result
 (define-syntax (#%lambda-calculus-app stx)
   (syntax-parse stx
     [(_ proc:expr arg:expr ...)
      (syntax
       (let ([result (proc arg ...)])
-        (when (and (hash-has-key? *lambda-calculus-types* proc)
-                   (list? (hash-ref *lambda-calculus-types* proc)))
-          
-          (define type (safe-tail (hash-ref *lambda-calculus-types* proc)))
-          
-          (when (or (not (hash-has-key? *lambda-calculus-types* result))
-                  (equal? (hash-ref *lambda-calculus-types* result)
-                          type))
-              (apply : (cons result type))))
+        (try-apply-type result proc)
+        (try-apply-binding result proc arg ...)
         result))]))
 
 (define (safe-tail lst)

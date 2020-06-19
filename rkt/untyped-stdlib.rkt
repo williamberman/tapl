@@ -1,8 +1,8 @@
 #lang s-exp "untyped.rkt"
 
-(provide (all-defined-out))
+(require (only-in racket/base [cons rkt-cons]))
 
-(require "untyped-stdlib-support.rkt")
+(provide (all-defined-out))
 
 ;; Church booleans
 (define true (lambda tru (lambda fls tru)))
@@ -30,7 +30,7 @@
 
 ;; Pairs
 (define pair (lambda fst (lambda snd (lambda choose
-                                       (choose fst snd)))))
+                                       ((choose fst) snd)))))
 (: pair 'any 'any 'pair)
 
 (define first (lambda the-pair (the-pair true)))
@@ -43,56 +43,79 @@
 
 ;; Church Numerals
 (define c0 (lambda scc (lambda zro zro)))
-(define c1 (lambda scc (lambda zro (scc zro))))
-(define c2 (lambda scc (lambda zro (scc (scc zro)))))
-(define c3 (lambda scc (lambda zro (scc (scc (scc zro))))))
+(: c0 'natural)
 
-(define succ (lambda num (lambda scc (lambda zro ((num scc) zro)))))
+(define succ (lambda num (lambda scc (lambda zro (scc ((num scc) zro))))))
+(: succ 'natural 'natural)
+
+(define c1 (succ c0))
+(define c2 (succ c1))
+(define c3 (succ c2))
 
 (define pred (lambda num
-               (let ([reducer (lambda cur ((pair (second cur)
-                                                 (plus c1 (second cur)))))]
+               (let ([reducer (lambda cur ((pair (second cur))
+                                           ((add c1) (second cur))))]
                      [init ((pair c0) c0)])
                  (first ((num reducer) init)))))
+(: pred 'natural 'natural)
 
-(define plus (lambda num1 (lambda num2 (lambda scc (lambda zro
+(define add (lambda num1 (lambda num2 (lambda scc (lambda zro
                                                (let ([num1-applications ((num1 scc) zro)])
                                                  ((num2 scc) num1-applications)))))))
+(: add 'natural 'natural 'natural)
 
-(define subtract (lambda num1 (lambda num2 ((num1 pred) num2))))
+(define subtract (lambda num1 (lambda num2 ((num2 pred) num1))))
+(: subtract 'natural 'natural 'natural)
 
-(define multiply (lambda num1 (lambda num2 ((num1 (plus num2)) c0))))
+(define multiply (lambda num1 (lambda num2 ((num1 (add num2)) c0))))
+(: multiply 'natural 'natural 'natural)
 
 (define power (lambda base (lambda exponent
-                                 ((exponent (multiply base)) c1))))
+                             ((exponent (multiply base)) c1))))
+(: power 'natural 'natural 'natural)
 
 (define zero? (lambda num ((num (lambda _ false)) true)))
+(: zero? 'natural 'boolean)
 
 (define equal? (lambda num1 (lambda num2 ((and
                                            (zero? ((subtract num1) num2)))
                                           (zero? ((subtract num2) num1))))))
+(: equal? 'natural 'natural 'boolean)
+
+(interpret-as! 'natural (proc (num) ((num add1) 0)))
 
 
 ;; Lists
 
 ;; Lists are defined in terms of their fold function.
-;; '(x y z) -> '(cons x (cons y (cons z nil)))
+;; '(x y z) -> '(reducer x (reducer y (reducer z nil)))
 (define cons (lambda hd (lambda tl (lambda cns (lambda nl
                                                  ((cns hd) ((tl cns) nl)))))))
+(: cons 'any 'list 'list)
+
 (define nil (lambda cns (lambda nl nl)))
+(: nil 'list)
 
 (define nil? (lambda lst (let ([reducer (lambda _ (lambda _ false))])
                            ((lst reducer) true))))
+(: nil? 'list 'boolean)
 
 (define head (lambda lst (let ([reducer (lambda hd (lambda _ hd))])
                            (lst reducer false))))
+(: head 'list 'any)
 
 (define tail (lambda lst (let ([reducer (lambda hd (lambda acc
                                                      ((pair (second acc)) ((cons hd) (second acc)))))]
                                [init ((pair nil) nil)])
                            (first ((lst reducer) init)))))
+(: tail 'list 'any)
+
+(interpret-as! 'list (proc (lst) ((lst (proc (hd) (proc (tl) (rkt-cons hd tl))))
+                                  (list))))
 
 ;; Recursion combinators
+
+;; TODO, these combinators are for some reason triggering infinite loops
 
 ;; The divergent omega combinator evaluates to itself (contains no normal form).
 ;; As a result, you should not evaluate it :)
@@ -106,7 +129,9 @@
 (define Y (lambda func ((lambda x (func (x x))) (lambda x (func (x x))))))
 
 ;; All together now
+(define down (fix (lambda recur (lambda num (((if (zero? num)) num) (recur (pred num)))))))
+
 (define factorial (fix (lambda recur (lambda num
-                                       (if (zero? num)
-                                           c1
-                                           ((multiply num) (recur (pred num))))))))
+                                       ((((if (zero? num))
+                                          c1)
+                                         ((multiply num) (recur (pred num)))))))))
